@@ -746,6 +746,97 @@
 
   .infographic-link .link-icon { font-size: 15px; }
 
+  /* ─── SECCIÓN GUÍA GENIALLY ─── */
+  .infog-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .infog-main-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--altan-red);
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: #FFFFFF;
+    transition: all 0.2s;
+    margin-bottom: 14px;
+    box-shadow: 0 3px 14px rgba(158,29,35,0.3);
+  }
+
+  .infog-main-btn:hover {
+    background: var(--altan-red-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(158,29,35,0.4);
+  }
+
+  .infog-btn-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.15);
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex; align-items:center; justify-content:center;
+  }
+
+  .infog-btn-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+  }
+
+  .infog-btn-title {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: Verdana, sans-serif;
+    letter-spacing: 0.2px;
+  }
+
+  .infog-btn-sub {
+    font-size: 11px;
+    opacity: 0.8;
+    font-weight: 300;
+  }
+
+  .infog-btn-arrow {
+    font-size: 20px;
+    opacity: 0.8;
+    flex-shrink: 0;
+  }
+
+  /* Tags de temas disponibles */
+  .infog-topics {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .infog-topic-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
+    margin-bottom: 2px;
+  }
+
+  .infog-tag {
+    background: rgba(158,29,35,0.07);
+    border: 1px solid rgba(158,29,35,0.18);
+    color: var(--altan-red);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
   /* ─── NAV BUTTONS ─── */
   .nav-row {
     display: flex;
@@ -1040,6 +1131,33 @@
 // DATA: Decision Trees from Excel
 // =============================================
 
+
+// =============================================
+// 📌 CONFIGURACIÓN DE INFOGRAFÍAS
+// Pega aquí los URLs de tus infografías.
+// Busca el ID correspondiente y reemplaza
+// el valor de "url" con el link real.
+// Ejemplo: url: 'https://drive.google.com/...'
+// =============================================
+const INFOGRAFIAS = {
+  'volte':          { label: 'Cómo activar VoLTE',              url: '#' },
+  'ims':            { label: 'Configurar IMS paso a paso',       url: '#' },
+  'cobertura':      { label: 'Mapa de cobertura ALTÁN',          url: '#' },
+  'roaming':        { label: 'Activar Roaming',                  url: '#' },
+  'marcacion':      { label: 'Marcación correcta a 10 dígitos',  url: '#' },
+  'portabilidad':   { label: 'Proceso de portabilidad',          url: '#' },
+  'apn':            { label: 'Configurar APN correctamente',     url: '#' },
+  'datos':          { label: 'Activar datos móviles',            url: '#' },
+  'sms-intl':       { label: 'Activar servicio SMS internacional',url: '#' },
+  'a2p':            { label: 'Apps A2P soportadas (lista)',       url: '#' },
+  'sms10':          { label: 'SMS a 10 dígitos (IFT)',           url: '#' },
+  'forzado-red':    { label: 'Forzado de red ALTÁN',             url: '#' },
+  'sim':            { label: 'Cómo insertar la SIM correctamente',url: '#' },
+};
+
+// Helper para obtener infografía por ID
+function inf(id) { return INFOGRAFIAS[id] || { label: id, url: '#' }; }
+
 const categories = {
 
   'llam-es': {
@@ -1061,7 +1179,7 @@ const categories = {
     ],
     steps: [
       { paso:1, nivel:'N1', accion:'Validar que el equipo esté dentro de la lista de equipos homologados.', validacion:'¿Está dentro de la lista?', si:'Paso 2', no:'Se le indica que no podrá hacer uso del servicio con el equipo actual. Se finaliza llamada.', nota:'Aplica si el usuario cambió de equipo.' },
-      { paso:2, nivel:'N1', accion:'Validar que la línea tenga el servicio Activo (Ver en View 360: Activo, Desactivado, Suspendido, Barring, Idle, Pre-Desactivado).', validacion:'¿Está activo?', si:'Paso 3', no:'La línea está Suspendida. Indicar motivo y reactivar si procede.\n• Morosidad → Solicitar pago\n• Robo/Extravío → Reactivar a solicitud\n• Cancelación → No se reactiva', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar que la línea tenga el servicio Activo (consultar en el sistema de gestión/CRM: Activo, Desactivado, Suspendido, Barring, Idle, Pre-Desactivado).', validacion:'¿Está activo?', si:'Paso 3', no:'La línea está Suspendida. Indicar motivo y reactivar si procede.\n• Morosidad → Solicitar pago\n• Robo/Extravío → Reactivar a solicitud\n• Cancelación → No se reactiva', nota:'' },
       { paso:3, nivel:'N1', accion:'Verifica que la línea cuente con saldo para realizar llamadas.', validacion:'¿Tiene saldo?', si:'Paso 4', no:'Se indica que los beneficios se renovarán en el siguiente corte. Se finaliza llamada.', nota:'Depende del cliente si maneja paquetes adicionales.' },
       { paso:4, nivel:'N1', accion:'Validar que el cliente NO tenga activo el modo avión en su terminal.', validacion:'¿Modo avión desactivado?', si:'Paso 5', no:'Tenía modo avión activo. Se desactiva y queda con servicio. Se finaliza llamada.', nota:'' },
       { paso:5, nivel:'N1', accion:'Verificar que el cliente tenga VoLTE activo en su terminal.', validacion:'¿VoLTE activo?', si:'Paso 6', no:'Se activa VoLTE y queda con servicio. Se finaliza llamada.', nota:'Solicitar evidencia de pantalla.' },
@@ -1075,7 +1193,7 @@ const categories = {
     ],
     checklist: [
       'Equipo en lista de equipos homologados',
-      'Estatus del servicio (Activo en View 360)',
+      'Estatus del servicio (Activo en sistema de gestión/CRM)',
       'Saldo disponible en línea',
       'Modo Avión desactivado',
       'VoLTE activado en el equipo',
@@ -1085,12 +1203,7 @@ const categories = {
       'Forzado de red verificado',
       'Datos encendidos'
     ],
-    infographics: [
-      { label:'Cómo activar VoLTE', url:'#' },
-      { label:'Configurar IMS paso a paso', url:'#' },
-      { label:'Mapa de cobertura ALTÁN', url:'#' },
-      { label:'Activar Roaming', url:'#' }
-    ]
+    infographics: ['volte','ims','cobertura','roaming']
   },
 
   'llam-sal': {
@@ -1112,7 +1225,7 @@ const categories = {
     ],
     steps: [
       { paso:1, nivel:'N1', accion:'Validar que el equipo esté en la lista de equipos homologados.', validacion:'¿Está en la lista?', si:'Paso 2', no:'No puede usar el servicio con ese equipo. Se finaliza llamada.', nota:'Aplica si cambió de equipo.' },
-      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en View 360 (Activo, Suspendido, Barring, etc.)', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Informar motivo y reactivar si procede.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en el sistema de gestión/CRM (Activo, Suspendido, Barring, etc.)', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Informar motivo y reactivar si procede.', nota:'' },
       { paso:3, nivel:'N1', accion:'Verificar que tenga saldo para llamadas.', validacion:'¿Tiene saldo?', si:'Paso 4', no:'Informar renovación en siguiente corte. Se finaliza llamada.', nota:'' },
       { paso:4, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 5', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
       { paso:5, nivel:'N1', accion:'Verificar VoLTE activo en el equipo.', validacion:'¿VoLTE activo?', si:'Paso 6', no:'Se activa VoLTE y queda con servicio. Se finaliza llamada.', nota:'Evidencia de pantalla.' },
@@ -1136,11 +1249,7 @@ const categories = {
       'Forzado de red',
       'Marcación a 10 dígitos confirmada'
     ],
-    infographics: [
-      { label:'Marcación correcta a 10 dígitos', url:'#' },
-      { label:'Activar VoLTE', url:'#' },
-      { label:'Mapa de cobertura', url:'#' }
-    ]
+    infographics: ['marcacion','volte','cobertura']
   },
 
   'llam-ent': {
@@ -1162,7 +1271,7 @@ const categories = {
     ],
     steps: [
       { paso:1, nivel:'N1', accion:'Validar que el equipo esté en la lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio con ese equipo. Se finaliza llamada.', nota:'' },
-      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en el sistema de gestión/CRM.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
       { paso:3, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 4', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
       { paso:4, nivel:'N1', accion:'Verificar VoLTE activo.', validacion:'¿VoLTE activo?', si:'Paso 5', no:'Se activa VoLTE y queda con servicio. Se finaliza llamada.', nota:'Evidencia de pantalla.' },
       { paso:5, nivel:'N1', accion:'Confirmar cobertura ALTÁN o Roaming.', validacion:'¿Tiene cobertura?', si:'Paso 6', no:'Activar Roaming. Se finaliza llamada.', nota:'' },
@@ -1182,11 +1291,7 @@ const categories = {
       'Verificar si viene de portabilidad',
       'Confirmar con quien marca al cliente'
     ],
-    infographics: [
-      { label:'Activar VoLTE', url:'#' },
-      { label:'Mapa de cobertura', url:'#' },
-      { label:'Proceso portabilidad', url:'#' }
-    ]
+    infographics: ['volte','cobertura','portabilidad']
   },
 
   'datos': {
@@ -1204,12 +1309,12 @@ const categories = {
       { q: '¿Le aparece el ícono de 4G, LTE o alguna indicación de red de datos en la barra de estado?', tip: 'Si no aparece ningún ícono de datos, el equipo no está registrado en datos aunque tenga señal de voz. Puede ser APN incorrecto o datos no habilitados en la línea.' },
       { q: '¿Ya intentó apagar y encender los datos móviles o hacer un reinicio del equipo?', tip: 'El reinicio de ciclo de datos forza al equipo a reconectarse a la red de datos. Si ya lo hizo y persiste, es más profundo (APN, configuración de red o falla de plataforma).' },
       { q: '¿Ha notado que solo le pasa al usar cierta aplicación o al entrar a ciertos sitios web?', tip: 'Si es una sola app, puede ser problema de caché, permisos de la app, o que el servidor de esa app esté caído. No es problema de la red ALTÁN.' },
-      { q: '¿Su plan de datos aún tiene GB disponibles o cree que ya los agotó?', tip: 'Si agotó el paquete de datos, la velocidad cae drásticamente o se bloquea la navegación. Verificar consumo en View 360.' },
+      { q: '¿Su plan de datos aún tiene GB disponibles o cree que ya los agotó?', tip: 'Si agotó el paquete de datos, la velocidad cae drásticamente o se bloquea la navegación. Verificar consumo en el sistema de gestión/CRM.' },
       { q: '¿Tiene configurado correctamente el APN en su equipo?', tip: 'El APN (Access Point Name) es la configuración que le dice al equipo cómo conectarse a internet. Si está mal o en blanco, no habrá datos aunque todo lo demás esté bien.' }
     ],
     steps: [
       { paso:1, nivel:'N1', accion:'Validar que el equipo esté en la lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio con ese equipo. Se finaliza llamada.', nota:'' },
-      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en el sistema de gestión/CRM.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
       { paso:3, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 4', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
       { paso:4, nivel:'N1', accion:'Validar que el cliente tenga los datos móviles encendidos.', validacion:'¿Datos activos?', si:'Paso 5', no:'Se pide activar datos y queda con servicio. Se finaliza llamada.', nota:'' },
       { paso:5, nivel:'N1', accion:'Pedir al cliente validar la configuración del APN (si el equipo lo permite).', validacion:'¿APN correcto?', si:'Paso 6', no:'Se configura APN correctamente y queda con servicio. Se finaliza llamada.', nota:'' },
@@ -1232,12 +1337,7 @@ const categories = {
       'Prueba en múltiples apps realizada',
       'No conectado a WiFi durante prueba'
     ],
-    infographics: [
-      { label:'Configurar APN correctamente', url:'#' },
-      { label:'Activar datos móviles', url:'#' },
-      { label:'Mapa de cobertura', url:'#' },
-      { label:'Activar Roaming', url:'#' }
-    ]
+    infographics: ['apn','datos','cobertura','roaming']
   },
 
   'sms-es': {
@@ -1259,7 +1359,7 @@ const categories = {
     ],
     steps: [
       { paso:1, nivel:'N1', accion:'Validar que el equipo esté en lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio. Se finaliza llamada.', nota:'' },
-      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en el sistema de gestión/CRM.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
       { paso:3, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 4', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
       { paso:4, nivel:'N1', accion:'Preguntar: ¿El mensaje es a un número celular de 10 dígitos?', validacion:'¿Es a 10 dígitos?', si:'Paso 5', no:'El cliente intenta enviar a numeración corta (P2A). Informar que no se tiene ese servicio. Se finaliza llamada.', nota:'' },
       { paso:5, nivel:'N1', accion:'Validar si el usuario cuenta solo con servicio nacional.', validacion:'¿Es destino nacional?', si:'Paso 6', no:'Mensaje internacional. Verificar si tiene el servicio internacional activo.', nota:'Depende del cliente si maneja paquetes adicionales.' },
@@ -1278,10 +1378,7 @@ const categories = {
       'Reinicio de terminal realizado',
       'Validar si el mensaje es de app (A2P)'
     ],
-    infographics: [
-      { label:'Activar servicio internacional SMS', url:'#' },
-      { label:'Apps A2P soportadas', url:'#' }
-    ]
+    infographics: ['sms-intl','a2p']
   },
 
   'sms-sal': {
@@ -1303,7 +1400,7 @@ const categories = {
     ],
     steps: [
       { paso:1, nivel:'N1', accion:'Validar equipo en lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio. Se finaliza llamada.', nota:'' },
-      { paso:2, nivel:'N1', accion:'Validar estatus de línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en el sistema de gestión/CRM.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar.', nota:'' },
       { paso:3, nivel:'N1', accion:'¿El mensaje es a número celular de 10 dígitos?', validacion:'¿10 dígitos?', si:'Paso 4', no:'Trata de enviar a numeración corta. Informar que no se tiene ese servicio. Se finaliza.', nota:'' },
       { paso:4, nivel:'N1', accion:'¿Es un mensaje de Texto (SMS) o Multimedia (MMS)?', validacion:'¿Es texto?', si:'Paso 5', no:'Es MMS. Informar que no se cuenta con ese servicio. Se finaliza llamada.', nota:'' },
       { paso:5, nivel:'N1', accion:'¿El problema es con todos los números o con alguno específico?', validacion:'¿Falla con todos?', si:'Paso 6', no:'Falla con solo un contacto. Generar Ticket N2 y esperar 72 hrs.', nota:'' },
@@ -1322,9 +1419,7 @@ const categories = {
       'Modo Avión desactivado',
       'Reinicio de terminal realizado'
     ],
-    infographics: [
-      { label:'SMS a 10 dígitos (disposición IFT)', url:'#' }
-    ]
+    infographics: ['sms10']
   },
 
   'sms-ent': {
@@ -1346,7 +1441,7 @@ const categories = {
     ],
     steps: [
       { paso:1, nivel:'N1', accion:'Validar equipo en lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio. Se finaliza llamada.', nota:'' },
-      { paso:2, nivel:'N1', accion:'Validar estatus de línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en el sistema de gestión/CRM.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar.', nota:'' },
       { paso:3, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 4', no:'Se desactiva modo avión. Se finaliza llamada.', nota:'' },
       { paso:4, nivel:'N1', accion:'¿El SMS es de un usuario o de una aplicación (A2P)?', validacion:'¿Es de usuario?', si:'Paso 5', no:'Es de aplicación A2P. Validar lista de apps soportadas. Si no está en la lista, escalar a N2.', nota:'A2P: mensajes de suscripción, NIPs, contraseñas de bancos, etc.' },
       { paso:5, nivel:'N1', accion:'¿Es un mensaje nacional o internacional?', validacion:'¿Es nacional?', si:'Paso 6', no:'Mensaje internacional. Verificar si tiene servicio internacional activo.', nota:'' },
@@ -1366,10 +1461,7 @@ const categories = {
       'Reinicio de terminal realizado',
       'Verificar portabilidad'
     ],
-    infographics: [
-      { label:'Apps A2P soportadas (lista completa)', url:'#' },
-      { label:'Proceso portabilidad', url:'#' }
-    ]
+    infographics: ['a2p','portabilidad']
   },
 
   'sinservicio': {
@@ -1392,7 +1484,7 @@ const categories = {
     steps: [
       { paso:1, nivel:'N1', accion:'Validar equipo en lista de equipos homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio con ese equipo. Se finaliza llamada.', nota:'' },
       { paso:2, nivel:'N1', accion:'Validar que la SIM esté insertada correctamente.', validacion:'¿SIM insertada correcta?', si:'Paso 3', no:'Se valida servicio luego de insertar correctamente la SIM. Se finaliza llamada.', nota:'' },
-      { paso:3, nivel:'N1', accion:'Validar estatus de la línea en View 360.', validacion:'¿Está activo?', si:'Paso 4', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
+      { paso:3, nivel:'N1', accion:'Validar estatus de la línea en el sistema de gestión/CRM.', validacion:'¿Está activo?', si:'Paso 4', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
       { paso:4, nivel:'N1', accion:'Verificar que la línea tenga saldo.', validacion:'¿Tiene saldo?', si:'Paso 5', no:'Informar renovación en siguiente corte. Se finaliza llamada.', nota:'' },
       { paso:5, nivel:'N1', accion:'Validar que el equipo esté conectado a red ALTÁN (334140).', validacion:'¿Red ALTÁN?', si:'Paso 6', no:'Realizar forzado de red. Se valida servicio y se finaliza llamada.', nota:'' },
       { paso:6, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 7', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
@@ -1416,12 +1508,7 @@ const categories = {
       'Reinicio de terminal realizado',
       'Prueba con otra SIM realizada'
     ],
-    infographics: [
-      { label:'Forzado de red ALTÁN', url:'#' },
-      { label:'Insertar SIM correctamente', url:'#' },
-      { label:'Activar Roaming', url:'#' },
-      { label:'Mapa de cobertura', url:'#' }
-    ]
+    infographics: ['forzado-red','sim','roaming','cobertura']
   }
 };
 
@@ -1731,17 +1818,23 @@ function renderSolution(step, solution, isTicket, isYes) {
     </div>
   ` : '';
 
-  // Build infographics
+  // Build infographics — single Genially landing page
   const infographicsHtml = data.infographics && data.infographics.length > 0 ? `
     <div class="infographic-section">
-      <h4>📸 Infografías y Configuraciones</h4>
-      ${data.infographics.map(link => `
-        <a href="${link.url}" class="infographic-link" target="_blank">
-          <span class="link-icon">🔗</span>
-          <span>${link.label}</span>
-          <span style="margin-left:auto;font-size:11px;color:var(--text-muted)">Ver →</span>
-        </a>
-      `).join('')}
+      <h4>📸 GUÍA DE CONFIGURACIONES</h4>
+      <p class="infog-desc">Consulta el paso a paso de las configuraciones relacionadas con esta falla. La guía está organizada por temas para que el ejecutivo encuentre rápidamente lo que necesita.</p>
+      <a href="https://view.genially.com/67e22998b61f4755a1db0cc7" class="infog-main-btn" target="_blank">
+        <span class="infog-btn-icon">📱</span>
+        <div class="infog-btn-text">
+          <span class="infog-btn-title">Abrir Guía de Configuraciones</span>
+          <span class="infog-btn-sub">Elige el tema que necesitas dentro de la guía</span>
+        </div>
+        <span class="infog-btn-arrow">→</span>
+      </a>
+      <div class="infog-topics">
+        <span class="infog-topic-label">Temas disponibles en la guía:</span>
+        ${data.infographics.map(id => `<span class="infog-tag">${inf(id).label}</span>`).join('')}
+      </div>
     </div>
   ` : '';
 
@@ -1838,7 +1931,7 @@ function renderRecargas() {
           ❓ ¿Cómo verificar saldo disponible?
         </button>
         <div id="r4" class="info-answer" style="display:none">
-          El agente puede verificar el saldo del cliente directamente en el sistema View 360 o equivalente. El cliente puede consultarlo desde su app o mediante USSD si el operador lo tiene habilitado.
+          El agente puede verificar el saldo del cliente directamente en el sistema de gestión/CRM. El cliente puede consultarlo desde su app o mediante USSD si el operador lo tiene habilitado.
         </div>
       </div>
     </div>
