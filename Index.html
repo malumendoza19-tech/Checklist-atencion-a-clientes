@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Troubleshooting | ALTÁN Movilidad</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Encode+Sans:wght@300;400;500;600;700&family=Verdana&display=swap');
+
+  /* =============================================
+     PALETA OFICIAL ALTÁN REDES — Manual v5
+     Primario:   #9E1D23  (rojo ALTÁN)
+     Secundario: #ABA5A8  (gris medio)
+     Adyacente:  #DBDBDB  (gris claro)
+     Negro:      #1A1A1A  (textos oscuros)
+     Blanco:     #FFFFFF
+     ============================================= */
+
+  :root {
+    --altan-red:      #9E1D23;
+    --altan-red-dark: #7a1519;
+    --altan-red-light:#c4262e;
+    --altan-grey:     #ABA5A8;
+    --altan-grey-lt:  #DBDBDB;
+    --altan-grey-dk:  #8B8B8B;
+    --altan-white:    #FFFFFF;
+    --altan-black:    #1A1A1A;
+
+    /* Mapeados funcionales */
+    --bg:         #F5F4F4;
+    --surface:    #FFFFFF;
+    --surface2:   #F0EEEE;
+    --surface3:   #E8E5E5;
+    --accent:     #9E1D23;
+    --accent2:    #7a1519;
+    --accent3:    #2E7D32;
+    --danger:     #9E1D23;
+    --warning:    #B8621A;
+    --text:       #1A1A1A;
+    --text-muted: #6B6568;
+    --border:     rgba(158,29,35,0.18);
+    --border-lt:  rgba(158,29,35,0.08);
+    --shadow:     0 2px 16px rgba(158,29,35,0.10);
+    --shadow-lg:  0 4px 32px rgba(158,29,35,0.14);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Encode Sans', Verdana, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Fondo sutil con patrón de líneas diagonal ALTÁN */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+      repeating-linear-gradient(
+        135deg,
+        transparent,
+        transparent 60px,
+        rgba(158,29,35,0.025) 60px,
+        rgba(158,29,35,0.025) 61px
+      );
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .app { position:relative; z-index:1; }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--altan-red);
+    border-bottom: 4px solid var(--altan-red-dark);
+    padding: 0 24px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    box-shadow: 0 4px 20px rgba(158,29,35,0.35);
+    height: 68px;
+  }
+
+  /* Franja izquierda decorativa */
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-right: 24px;
+    border-right: 1px solid rgba(255,255,255,0.2);
+    margin-right: 20px;
+  }
+
+  /* Logo ALTÁN texto simulado */
+  .logo-altan {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+
+  .logo-altan .logo-name {
+    font-family: Verdana, sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .logo-altan .logo-sub {
+    font-family: 'Encode Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* Líneas decorativas del logo ALTÁN */
+  .logo-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-right: 2px;
+  }
+  .logo-line { height: 2px; background: #FFFFFF; }
+  .logo-line:nth-child(1) { width: 28px; }
+  .logo-line:nth-child(2) { width: 28px; }
+
+  header h1 {
+    font-family: 'Encode Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: 0.2px;
+  }
+
+  header p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.70);
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .status-pill {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #FFFFFF;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── LAYOUT ─── */
+  .main {
+    display: grid;
+    grid-template-columns: 272px 1fr;
+    min-height: calc(100vh - 68px);
+  }
+
+  /* ─── SIDEBAR ─── */
+  aside {
+    background: var(--surface);
+    border-right: 1px solid var(--altan-grey-lt);
+    padding: 20px 14px;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+  }
+
+  /* Banda roja lateral */
+  aside::before {
+    content:'';
+    display:block;
+    height: 3px;
+    background: var(--altan-red);
+    margin: -20px -14px 16px -14px;
+    border-bottom: 1px solid var(--altan-red-dark);
+  }
+
+  .sidebar-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--altan-red);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  .category-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Encode Sans', Verdana, sans-serif;
+    font-size: 12.5px;
+    font-weight: 400;
+    text-align: left;
+    transition: all 0.18s;
+    margin-bottom: 2px;
+  }
+
+  .category-btn:hover {
+    background: var(--surface2);
+    border-color: var(--altan-grey-lt);
+    color: var(--text);
+  }
+
+  .category-btn.active {
+    background: rgba(158,29,35,0.06);
+    border-color: var(--altan-red);
+    color: var(--altan-red);
+    font-weight: 600;
+  }
+
+  .cat-icon {
+    width: 30px; height: 30px;
+    background: var(--surface2);
+    border-radius: 7px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 14px;
+    flex-shrink: 0;
+    border: 1px solid var(--altan-grey-lt);
+  }
+
+  .category-btn.active .cat-icon {
+    background: rgba(158,29,35,0.08);
+    border-color: rgba(158,29,35,0.25);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--altan-grey-lt);
+    margin: 12px 0;
+  }
+
+  .info-card {
+    background: rgba(158,29,35,0.04);
+    border: 1px solid rgba(158,29,35,0.15);
+    border-left: 3px solid var(--altan-red);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .info-card strong { color: var(--altan-red); }
+
+  /* ─── CONTENT ─── */
+  .content {
+    padding: 28px;
+    overflow-y: auto;
+    max-height: calc(100vh - 68px);
+    background: var(--bg);
+  }
+
+  /* ─── WELCOME ─── */
+  .welcome {
+    max-width: 700px;
+    margin: 32px auto;
+    text-align: center;
+  }
+
+  .welcome-icon {
+    width: 80px; height: 80px;
+    background: var(--altan-red);
+    border-radius: 20px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 36px;
+    margin: 0 auto 24px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+  }
+
+  .welcome-icon::after {
+    content:'';
+    position:absolute;
+    inset:-3px;
+    border-radius: 23px;
+    border: 2px solid rgba(158,29,35,0.3);
+  }
+
+  .welcome h2 {
+    font-family: Verdana, sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--altan-red);
+    letter-spacing: -0.3px;
+  }
+
+  .welcome p {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 32px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .quick-card {
+    background: var(--surface);
+    border: 1px solid var(--altan-grey-lt);
+    border-top: 3px solid var(--altan-red);
+    border-radius: 10px;
+    padding: 18px 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .quick-card:hover {
+    border-color: var(--altan-red);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .quick-card .qi { font-size: 26px; margin-bottom: 8px; }
+  .quick-card .ql { font-size: 12px; font-weight: 700; color: var(--text); }
+  .quick-card .qd { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ─── TREE ─── */
+  .tree-container { max-width: 720px; }
+
+  .tree-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--altan-grey-lt);
+  }
+
+  .tree-header-icon {
+    width: 50px; height: 50px;
+    background: var(--altan-red);
+    border-radius: 12px;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 24px;
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+  }
+
+  .tree-header h2 {
+    font-family: Verdana, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--altan-red);
+  }
+
+  .tree-header p { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  /* ─── BREADCRUMB ─── */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .breadcrumb span { color: var(--altan-red); font-weight: 600; }
+  .breadcrumb .sep { opacity: 0.4; }
+
+  /* ─── STEP CARD ─── */
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--altan-grey-lt);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    animation: slideIn 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--altan-red);
+  }
+
+  @keyframes slideIn {
+    from { opacity:0; transform:translateY(8px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(158,29,35,0.07);
+    border: 1px solid rgba(158,29,35,0.2);
+    color: var(--altan-red);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .step-question {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.55;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-family: Verdana, sans-serif;
+  }
+
+  .step-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: rgba(171,165,168,0.12);
+    border-left: 3px solid var(--altan-grey);
+    padding: 8px 12px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  /* ─── DIAGNOSTIC PROMPT ─── */
+  .diag-prompt {
+    background: rgba(158,29,35,0.03);
+    border: 1px solid rgba(158,29,35,0.15);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .diag-prompt h4 {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--altan-red);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .diag-question {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--altan-grey-lt);
+  }
+
+  .diag-question:last-child { border-bottom: none; }
+  .diag-q-icon { color: var(--altan-red); flex-shrink: 0; margin-top: 1px; }
+
+  /* ─── INTERACTIVE DIAGNOSTIC CARDS ─── */
+  .diag-question-card {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: border-color 0.18s;
+    overflow: hidden;
+  }
+
+  .diag-q-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 7px;
+  }
+
+  .diag-q-row:hover { background: rgba(158,29,35,0.04); }
+
+  .diag-q-num {
+    width: 24px; height: 24px;
+    background: var(--altan-red);
+    border-radius: 50%;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #FFFFFF;
+    flex-shrink: 0;
+  }
+
+  .diag-q-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .diag-q-arrow {
+    color: var(--altan-grey);
+    font-size: 16px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .diag-q-tip {
+    padding: 8px 12px 10px 46px;
+    font-size: 12px;
+    color: var(--altan-red-dark);
+    background: rgba(158,29,35,0.05);
+    border-top: 1px solid rgba(158,29,35,0.1);
+    line-height: 1.6;
+  }
+
+  /* ─── YES/NO BUTTONS ─── */
+  .answer-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .btn-yes, .btn-no {
+    flex: 1;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Encode Sans', Verdana, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-yes {
+    background: #2E7D32;
+    border: none;
+    color: #FFFFFF;
+  }
+
+  .btn-yes:hover {
+    background: #1B5E20;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(46,125,50,0.3);
+  }
+
+  .btn-no {
+    background: var(--altan-red);
+    border: none;
+    color: #FFFFFF;
+  }
+
+  .btn-no:hover {
+    background: var(--altan-red-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(158,29,35,0.3);
+  }
+
+  /* ─── SOLUTION CARD ─── */
+  .solution-card {
+    background: #F1F8F1;
+    border: 1px solid #A5D6A7;
+    border-left: 4px solid #2E7D32;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    animation: slideIn 0.25s ease;
+  }
+
+  .solution-card h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2E7D32;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .solution-card p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .solution-card .note-tag {
+    display: inline-block;
+    background: rgba(184,98,26,0.08);
+    border: 1px solid rgba(184,98,26,0.3);
+    color: var(--warning);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+  }
+
+  /* ─── TICKET CARD ─── */
+  .ticket-card {
+    background: rgba(158,29,35,0.04);
+    border: 1px solid rgba(158,29,35,0.2);
+    border-left: 4px solid var(--altan-red);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .ticket-card h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--altan-red);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  /* ─── CHECKLIST ─── */
+  .checklist-card {
+    background: var(--surface);
+    border: 1px solid var(--altan-grey-lt);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+
+  .checklist-card h3 {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--altan-red);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--altan-grey-lt);
+    padding-bottom: 10px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--altan-grey-lt);
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 6px;
+    padding: 9px 8px;
+  }
+
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: var(--surface2); }
+
+  .check-box {
+    width: 20px; height: 20px;
+    border: 2px solid var(--altan-grey);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex; align-items:center; justify-content:center;
+    transition: all 0.18s;
+    font-size: 12px;
+    color: #FFFFFF;
+  }
+
+  .check-item.checked .check-box {
+    background: var(--altan-red);
+    border-color: var(--altan-red);
+  }
+
+  .check-item.checked .check-label {
+    text-decoration: line-through;
+    color: var(--altan-grey);
+  }
+
+  .check-label { font-size: 13px; line-height: 1.4; color: var(--text); }
+
+  /* ─── INFOGRAPHIC SECTION ─── */
+  .infographic-section {
+    background: rgba(171,165,168,0.08);
+    border: 1px solid var(--altan-grey-lt);
+    border-top: 2px solid var(--altan-red);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .infographic-section h4 {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--altan-red);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+
+  .infographic-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--altan-grey-lt);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.18s;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  .infographic-link:hover {
+    border-color: var(--altan-red);
+    color: var(--altan-red);
+    background: rgba(158,29,35,0.03);
+  }
+
+  .infographic-link .link-icon { font-size: 15px; }
+
+  /* ─── NAV BUTTONS ─── */
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .btn-back {
+    background: var(--surface);
+    border: 1px solid var(--altan-grey-lt);
+    color: var(--text-muted);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-family: 'Encode Sans', Verdana, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-back:hover {
+    border-color: var(--altan-grey);
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  .btn-restart {
+    background: var(--altan-red);
+    border: none;
+    color: #FFFFFF;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'Encode Sans', Verdana, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-restart:hover {
+    background: var(--altan-red-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(158,29,35,0.3);
+  }
+
+  /* ─── LEVEL BADGE ─── */
+  .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  .level-n1 {
+    background: rgba(158,29,35,0.08);
+    border: 1px solid rgba(158,29,35,0.2);
+    color: var(--altan-red);
+  }
+
+  .level-n2 {
+    background: rgba(139,139,139,0.1);
+    border: 1px solid rgba(139,139,139,0.3);
+    color: var(--altan-grey-dk);
+  }
+
+  /* ─── INFORMATIVE SECTION ─── */
+  .info-section {
+    background: var(--surface);
+    border: 1px solid var(--altan-grey-lt);
+    border-radius: 10px;
+    padding: 24px;
+    max-width: 620px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  }
+
+  .info-topic-btn {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--altan-grey-lt);
+    border-left: 3px solid var(--altan-grey-lt);
+    color: var(--text);
+    padding: 13px 16px;
+    border-radius: 6px;
+    font-family: 'Encode Sans', Verdana, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    text-align: left;
+  }
+
+  .info-topic-btn:hover {
+    border-left-color: var(--altan-red);
+    border-color: rgba(158,29,35,0.2);
+    color: var(--altan-red);
+    background: rgba(158,29,35,0.03);
+  }
+
+  .info-answer {
+    background: rgba(158,29,35,0.03);
+    border: 1px solid rgba(158,29,35,0.12);
+    border-left: 3px solid var(--altan-red);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    line-height: 1.75;
+    margin-bottom: 8px;
+    animation: slideIn 0.2s ease;
+    color: var(--text);
+  }
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-bar-wrap { margin-bottom: 20px; }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .progress-track {
+    height: 5px;
+    background: var(--altan-grey-lt);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--altan-red);
+    border-radius: 5px;
+    transition: width 0.4s ease;
+  }
+
+  /* ─── A2P GRID ─── */
+  .a2p-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .a2p-item {
+    background: var(--surface);
+    border: 1px solid var(--altan-grey-lt);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .a2p-item strong { color: var(--text); display: block; font-size: 12.5px; font-weight: 600; }
+
+  .ok-dot { color: #2E7D32; }
+  .pending-dot { color: var(--warning); }
+
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; }
+    aside { display: none; }
+    .quick-grid { grid-template-columns: repeat(2, 1fr); }
+    .a2p-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER ALTÁN -->
+<header>
+  <div class="header-brand">
+    <div class="logo-lines">
+      <div class="logo-line"></div>
+      <div class="logo-line"></div>
+    </div>
+    <div class="logo-altan">
+      <span class="logo-name">ALTÁN</span>
+      <span class="logo-sub">Redes</span>
+    </div>
+  </div>
+  <div>
+    <h1>Simulador de Troubleshooting — Movilidad</h1>
+    <p>Árbol de decisiones guiado · Soporte técnico · v2.6</p>
+  </div>
+  <div class="header-right">
+    <div class="status-pill">● EN LÍNEA</div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-title">Tipo de Falla</div>
+
+    <button class="category-btn" onclick="selectCategory('welcome')">
+      <div class="cat-icon">🏠</div>
+      <div>Inicio</div>
+    </button>
+
+    <button class="category-btn" id="btn-llam-es" onclick="selectCategory('llam-es')">
+      <div class="cat-icon">📵</div>
+      <div>Sin Llamadas Ent. & Sal.</div>
+    </button>
+
+    <button class="category-btn" id="btn-llam-sal" onclick="selectCategory('llam-sal')">
+      <div class="cat-icon">📤</div>
+      <div>Sin Llamadas Salientes</div>
+    </button>
+
+    <button class="category-btn" id="btn-llam-ent" onclick="selectCategory('llam-ent')">
+      <div class="cat-icon">📥</div>
+      <div>Sin Llamadas Entrantes</div>
+    </button>
+
+    <button class="category-btn" id="btn-datos" onclick="selectCategory('datos')">
+      <div class="cat-icon">🌐</div>
+      <div>Sin Navegación / Datos</div>
+    </button>
+
+    <button class="category-btn" id="btn-sms-es" onclick="selectCategory('sms-es')">
+      <div class="cat-icon">💬</div>
+      <div>Sin SMS Ent. & Sal.</div>
+    </button>
+
+    <button class="category-btn" id="btn-sms-sal" onclick="selectCategory('sms-sal')">
+      <div class="cat-icon">✉️</div>
+      <div>Sin SMS Salientes</div>
+    </button>
+
+    <button class="category-btn" id="btn-sms-ent" onclick="selectCategory('sms-ent')">
+      <div class="cat-icon">📨</div>
+      <div>Sin SMS Entrantes</div>
+    </button>
+
+    <button class="category-btn" id="btn-sinservicio" onclick="selectCategory('sinservicio')">
+      <div class="cat-icon">🚫</div>
+      <div>Sin Servicio Total</div>
+    </button>
+
+    <hr class="divider">
+    <div class="sidebar-title">Informativo</div>
+
+    <button class="category-btn" id="btn-recargas" onclick="selectCategory('recargas')">
+      <div class="cat-icon">💳</div>
+      <div>Recargas</div>
+    </button>
+
+    <button class="category-btn" id="btn-portabilidad" onclick="selectCategory('portabilidad')">
+      <div class="cat-icon">🔄</div>
+      <div>Seguimiento Portabilidad</div>
+    </button>
+
+    <button class="category-btn" id="btn-a2p" onclick="selectCategory('a2p')">
+      <div class="cat-icon">📋</div>
+      <div>Apps A2P Soportadas</div>
+    </button>
+
+    <hr class="divider">
+    <div class="info-card">
+      <strong>💡 Tip:</strong> Si el cliente no hizo preguntas de diagnóstico, usa las preguntas clave antes de avanzar al árbol de pasos.
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content" id="content">
+    <!-- Dynamic content here -->
+  </div>
+</div>
+
+</div>
+
+<script>
+// =============================================
+// DATA: Decision Trees from Excel
+// =============================================
+
+const categories = {
+
+  'llam-es': {
+    label: 'Sin Llamadas Entrantes & Salientes',
+    icon: '📵',
+    diagQuestions: [
+      { q: '¿Desde cuándo presenta la falla con las llamadas?', tip: 'Define si es un problema reciente o continuo. Si empezó de golpe, puede ser un cambio en la línea o en el equipo. Si lleva semanas, puede ser configuración o cobertura.' },
+      { q: '¿Realizó recientemente algún cambio de número o portabilidad?', tip: 'Una portabilidad reciente puede dejar la línea mal enrutada en la red. Es clave saberlo para escalar correctamente al CIC ALTÁN.' },
+      { q: '¿Hizo algún cambio de equipo celular recientemente?', tip: 'Un equipo nuevo puede no estar homologado o puede no tener VoLTE configurado. Sin VoLTE, la línea no se registra correctamente en la red ALTÁN.' },
+      { q: '¿La falla ocurre todo el tiempo, o solo en ciertos horarios del día?', tip: 'Si falla solo en horario pico (mañana, mediodía, tarde-noche) puede ser saturación de red en esa zona. Si es constante, apunta más a un problema de configuración o línea.' },
+      { q: '¿La falla ocurre en cualquier lugar o solo cuando está en un lugar específico?', tip: 'Si solo falla en casa, trabajo o zona específica, puede ser un problema de cobertura indoor o punto ciego. Si falla en todos lados, el problema es de la línea o el equipo.' },
+      { q: '¿El problema es con todas las llamadas o solo con ciertos números?', tip: 'Si falla solo hacia/desde un número específico, el problema puede ser del número destino (mal enrutado, número de otra red, etc.) y no de la línea del cliente.' },
+      { q: '¿Qué mensaje o grabación le da el equipo al intentar llamar?', tip: 'Cada grabación indica algo: "Número no existe" = marcación incorrecta. "Fuera de servicio" = línea suspendida o sin cobertura. "Sin red" = equipo sin señal. "Llamada finalizada sin tono" = posible problema de VoLTE o IMS.' },
+      { q: '¿No puede hacer llamadas, no puede recibirlas, o ninguna de las dos?', tip: 'Si solo falla una dirección (solo salientes o solo entrantes), es una restricción específica. Si fallan ambas, es una falla más general de la línea o el equipo.' },
+      { q: '¿Tiene activo el modo avión o algún perfil de red especial en el equipo?', tip: 'A veces el cliente activa el modo avión sin darse cuenta, o tiene un perfil de red que bloquea llamadas. Es un paso rápido de descartar.' },
+      { q: '¿El equipo muestra barras de señal o aparece sin señal?', tip: 'Sin barras = sin registro en la red. Con barras pero sin llamadas = el registro está pero hay un bloqueo a nivel de servicio o configuración.' },
+      { q: '¿Ha intentado reiniciar el equipo o retirar y volver a insertar la SIM?', tip: 'Muchas fallas de llamadas se resuelven con un reinicio que forza al equipo a registrarse nuevamente en la red. Importante saber si ya lo intentó.' },
+      { q: '¿El equipo tiene Dual SIM? ¿Cuál SIM está usando?', tip: 'En equipos con dos ranuras, es común que el cliente esté usando la SIM equivocada o que la SIM ALTÁN esté en el slot secundario con configuración distinta.' }
+    ],
+    steps: [
+      { paso:1, nivel:'N1', accion:'Validar que el equipo esté dentro de la lista de equipos homologados.', validacion:'¿Está dentro de la lista?', si:'Paso 2', no:'Se le indica que no podrá hacer uso del servicio con el equipo actual. Se finaliza llamada.', nota:'Aplica si el usuario cambió de equipo.' },
+      { paso:2, nivel:'N1', accion:'Validar que la línea tenga el servicio Activo (Ver en View 360: Activo, Desactivado, Suspendido, Barring, Idle, Pre-Desactivado).', validacion:'¿Está activo?', si:'Paso 3', no:'La línea está Suspendida. Indicar motivo y reactivar si procede.\n• Morosidad → Solicitar pago\n• Robo/Extravío → Reactivar a solicitud\n• Cancelación → No se reactiva', nota:'' },
+      { paso:3, nivel:'N1', accion:'Verifica que la línea cuente con saldo para realizar llamadas.', validacion:'¿Tiene saldo?', si:'Paso 4', no:'Se indica que los beneficios se renovarán en el siguiente corte. Se finaliza llamada.', nota:'Depende del cliente si maneja paquetes adicionales.' },
+      { paso:4, nivel:'N1', accion:'Validar que el cliente NO tenga activo el modo avión en su terminal.', validacion:'¿Modo avión desactivado?', si:'Paso 5', no:'Tenía modo avión activo. Se desactiva y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:5, nivel:'N1', accion:'Verificar que el cliente tenga VoLTE activo en su terminal.', validacion:'¿VoLTE activo?', si:'Paso 6', no:'Se activa VoLTE y queda con servicio. Se finaliza llamada.', nota:'Solicitar evidencia de pantalla.' },
+      { paso:6, nivel:'N1', accion:'Verificar que el cliente tenga IMS activo. (Solo equipos VoLTE)', validacion:'¿IMS activo?', si:'Paso 7', no:'Se configura IMS y queda con servicio. Se finaliza llamada.', nota:'Solicitar evidencia de pantalla.' },
+      { paso:7, nivel:'N1', accion:'Confirmar en mapa de coberturas si el cliente está en cobertura ALTÁN o Roaming.', validacion:'¿Cliente con cobertura?', si:'Paso 8', no:'Cliente fuera de cobertura. Se brinda soporte para activar Roaming. Se finaliza llamada.', nota:'Solicitar evidencia de pantalla.' },
+      { paso:8, nivel:'N1', accion:'Solicitar al cliente reiniciar su terminal.', validacion:'¿Continúa sin servicio?', si:'Generar Ticket para verificación de N2.', no:'Queda con servicio de llamadas posterior al reinicio. Se finaliza llamada.', nota:'' },
+      { paso:9, nivel:'N2', accion:'Validar la ubicación de la falla.', validacion:'¿Es zona específica?', si:'Validar ubicación exacta con gnet track. Si cobertura no es óptima, informar que la señal no permite el servicio correctamente.', no:'Si es falla general, validar la marcación realizada. Ir a Paso 10.', nota:'' },
+      { paso:10, nivel:'N2', accion:'Validar la marcación realizada por el cliente.', validacion:'¿Marcación correcta?', si:'Identificar si la falla es con un solo número. Ir a Paso 11.', no:'Validar con marcación correcta. Cerrar ticket.', nota:'' },
+      { paso:11, nivel:'N2', accion:'Verificar si hay restricciones activas en la línea.', validacion:'¿Tiene restricciones?', si:'Revisar tipo de restricción y resolverla.', no:'Validar portabilidad. Ir a Paso 12.', nota:'' },
+      { paso:12, nivel:'N2', accion:'Validar si el cliente viene de portabilidad.', validacion:'¿Es portado?', si:'Identificar compañía de origen. Escalar caso a ALTÁN CIC con toda la info.', no:'Revisar Dual SIM y configuraciones adicionales.', nota:'Escalar a CIC de ALTÁN.' }
+    ],
+    checklist: [
+      'Equipo en lista de equipos homologados',
+      'Estatus del servicio (Activo en View 360)',
+      'Saldo disponible en línea',
+      'Modo Avión desactivado',
+      'VoLTE activado en el equipo',
+      'IMS configurado correctamente (solo equipos VoLTE)',
+      'Cobertura ALTÁN o Roaming activo',
+      'Reinicio de terminal realizado',
+      'Forzado de red verificado',
+      'Datos encendidos'
+    ],
+    infographics: [
+      { label:'Cómo activar VoLTE', url:'#' },
+      { label:'Configurar IMS paso a paso', url:'#' },
+      { label:'Mapa de cobertura ALTÁN', url:'#' },
+      { label:'Activar Roaming', url:'#' }
+    ]
+  },
+
+  'llam-sal': {
+    label: 'Sin Llamadas Salientes',
+    icon: '📤',
+    diagQuestions: [
+      { q: '¿Desde cuándo no puede realizar llamadas salientes?', tip: 'Saber cuándo empezó ayuda a relacionar la falla con algún evento: cambio de equipo, actualización, recarga vencida, etc.' },
+      { q: '¿Realizó algún cambio de equipo celular recientemente?', tip: 'Un equipo nuevo puede no tener VoLTE activo, puede no estar homologado, o puede estar bloqueado para llamadas salientes sin darse cuenta.' },
+      { q: '¿Realizó recientemente algún cambio de número o portabilidad?', tip: 'Una portabilidad puede dejar restricciones temporales o errores de enrutamiento que bloqueen las llamadas salientes.' },
+      { q: '¿La falla es todo el tiempo o solo en ciertos horarios o días?', tip: 'Fallas en horarios específicos pueden indicar saturación de red local. Si es constante, apunta a configuración o estado de la línea.' },
+      { q: '¿La falla ocurre en cualquier lugar o solo en un sitio específico?', tip: 'Si solo falla en casa o el trabajo, puede ser un punto de cobertura débil. Si falla en todos lados, es problema de la línea o el equipo.' },
+      { q: '¿El problema es con todos los números o solo al marcar a cierta persona o número?', tip: 'Fallas hacia un número específico pueden indicar que ese destino tiene un problema, no la línea del cliente.' },
+      { q: '¿A cuántos dígitos está marcando? ¿Está marcando a 10 dígitos?', tip: 'Desde agosto 2021 (disposición IFT), toda marcación en México debe ser a 10 dígitos. Si marca a 7 u 8 dígitos, la llamada no saldrá.' },
+      { q: '¿Qué mensaje le aparece en pantalla o qué escucha al intentar marcar?', tip: '"Sin red" = no hay registro. "Llamada no permitida" = puede ser restricción de Barring. "El número marcado no existe" = marcación incorrecta. "Llamada caída" = VoLTE o IMS mal configurado.' },
+      { q: '¿Puede recibir llamadas normalmente aunque no pueda hacerlas?', tip: 'Si recibe bien pero no puede llamar, ayuda a descartar que sea cobertura o SIM. Apunta más a una restricción de salientes o configuración de VoLTE.' },
+      { q: '¿El equipo tiene datos móviles activos o está en modo solo WiFi?', tip: 'En equipos VoLTE o con funciones avanzadas, tener los datos apagados puede afectar también las llamadas en ciertas configuraciones de red.' },
+      { q: '¿El equipo tiene Dual SIM? ¿Con cuál SIM intenta hacer las llamadas?', tip: 'En Dual SIM el cliente puede estar marcando desde la SIM equivocada que no tiene saldo o está suspendida.' },
+      { q: '¿Ya intentó reiniciar el equipo antes de llamar a soporte?', tip: 'Un reinicio forza al equipo a registrarse de nuevo en la red. Es importante saber si ya lo hizo para no repetir el paso y avanzar al siguiente.' }
+    ],
+    steps: [
+      { paso:1, nivel:'N1', accion:'Validar que el equipo esté en la lista de equipos homologados.', validacion:'¿Está en la lista?', si:'Paso 2', no:'No puede usar el servicio con ese equipo. Se finaliza llamada.', nota:'Aplica si cambió de equipo.' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en View 360 (Activo, Suspendido, Barring, etc.)', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Informar motivo y reactivar si procede.', nota:'' },
+      { paso:3, nivel:'N1', accion:'Verificar que tenga saldo para llamadas.', validacion:'¿Tiene saldo?', si:'Paso 4', no:'Informar renovación en siguiente corte. Se finaliza llamada.', nota:'' },
+      { paso:4, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 5', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:5, nivel:'N1', accion:'Verificar VoLTE activo en el equipo.', validacion:'¿VoLTE activo?', si:'Paso 6', no:'Se activa VoLTE y queda con servicio. Se finaliza llamada.', nota:'Evidencia de pantalla.' },
+      { paso:6, nivel:'N1', accion:'Verificar IMS activo (solo equipos VoLTE).', validacion:'¿IMS activo?', si:'Paso 7', no:'Se configura IMS y queda con servicio. Se finaliza llamada.', nota:'Evidencia de pantalla.' },
+      { paso:7, nivel:'N1', accion:'Confirmar cobertura ALTÁN o Roaming en mapa.', validacion:'¿Tiene cobertura?', si:'Paso 8', no:'Activar Roaming y validar servicio. Se finaliza llamada.', nota:'' },
+      { paso:8, nivel:'N1', accion:'Solicitar reinicio de terminal.', validacion:'¿Continúa sin servicio?', si:'Generar Ticket N2.', no:'Queda con servicio tras reinicio. Se finaliza llamada.', nota:'' },
+      { paso:9, nivel:'N2', accion:'Validar ubicación de la falla.', validacion:'¿Es zona específica?', si:'Usar gnet track para ubicación exacta. Informar si señal no es óptima.', no:'Validar marcación. Ir a Paso 10.', nota:'' },
+      { paso:10, nivel:'N2', accion:'Validar marcación del cliente.', validacion:'¿Marcación correcta?', si:'Identificar si falla es con un número específico. Ir a Paso 11.', no:'Validar con marcación correcta y cerrar ticket.', nota:'' },
+      { paso:11, nivel:'N2', accion:'Validar frecuencia de la falla.', validacion:'¿Ocurre con frecuencia?', si:'Reproducir falla marcando desde otros números.', no:'Validar portabilidad.', nota:'' },
+      { paso:12, nivel:'N2', accion:'Validar Dual SIM.', validacion:'¿Tiene Dual SIM?', si:'Verificar que esté usando la SIM correcta para llamadas.', no:'Revisar tono/mensaje de error y escalar a ALTÁN CIC.', nota:'' }
+    ],
+    checklist: [
+      'Equipo homologado verificado',
+      'Estatus del servicio activo',
+      'Saldo disponible',
+      'Modo Avión desactivado',
+      'VoLTE activado',
+      'IMS configurado (equipos VoLTE)',
+      'Cobertura / Roaming activo',
+      'Reinicio de terminal realizado',
+      'Forzado de red',
+      'Marcación a 10 dígitos confirmada'
+    ],
+    infographics: [
+      { label:'Marcación correcta a 10 dígitos', url:'#' },
+      { label:'Activar VoLTE', url:'#' },
+      { label:'Mapa de cobertura', url:'#' }
+    ]
+  },
+
+  'llam-ent': {
+    label: 'Sin Llamadas Entrantes',
+    icon: '📥',
+    diagQuestions: [
+      { q: '¿Desde cuándo no recibe llamadas entrantes?', tip: 'Si empezó de repente, puede coincidir con un cambio de equipo, portabilidad o suspensión de línea. Si lleva tiempo, puede ser un enrutamiento mal configurado.' },
+      { q: '¿Realizó recientemente algún cambio de número o portabilidad?', tip: 'Las portabilidades pueden generar fallas de enrutamiento donde las llamadas de ciertas redes no llegan al número portado. Es la causa más común de este problema.' },
+      { q: '¿Hizo algún cambio de equipo celular recientemente?', tip: 'Un equipo nuevo sin VoLTE o con IMS mal configurado puede impedir que las llamadas entrantes conecten correctamente.' },
+      { q: '¿La falla es todo el tiempo o solo en ciertos horarios?', tip: 'Fallas intermitentes en ciertas horas pueden indicar saturación de red o problemas de interconexión puntual entre operadores.' },
+      { q: '¿La falla ocurre en un lugar específico o en cualquier lugar?', tip: 'Si falla solo en un punto (casa, oficina), puede ser señal débil indoor. En esas condiciones el equipo puede no registrarse bien y las llamadas van directo a buzón o no conectan.' },
+      { q: '¿El problema es con todas las personas que le marcan o solo con alguna específica?', tip: 'Si solo falla desde cierto número, el problema puede estar del lado de quien llama (marcación incorrecta, restricciones de su operador). Si nadie puede llamarle, el problema es de la línea.' },
+      { q: '¿Desde qué compañía o red vienen las llamadas que no le entran?', tip: 'Fallas de interconexión pueden ser específicas de un operador. Por ejemplo, si solo le fallan las llamadas desde Telcel pero no desde Movistar, es un problema de interconexión entre redes.' },
+      { q: '¿Qué escucha quien le intenta llamar: tono de ocupado, buzón, o mensaje de "no disponible"?', tip: '"Buzón" inmediato = línea rechaza la llamada o está con Barring. "No disponible" = equipo sin registro en red. "Ocupado" constante = posible restricción de llamadas entrantes.' },
+      { q: '¿El equipo muestra barras de señal o está sin señal cuando le intentan llamar?', tip: 'Si el equipo no tiene señal, obviamente no puede recibir llamadas. Importante confirmar si hay señal al momento de la falla.' },
+      { q: '¿Puede hacer llamadas salientes con normalidad aunque no reciba entrantes?', tip: 'Si puede llamar pero no recibir, descarta problemas de SIM o cobertura general. Apunta a un enrutamiento incorrecto de las llamadas entrantes hacia esa línea.' },
+      { q: '¿Las llamadas perdidas le aparecen después en el registro de llamadas?', tip: 'Si aparecen las llamadas perdidas aunque no sonó el teléfono, el registro en red está bien pero hay un problema de notificación o señal momentánea en el punto donde estaba.' },
+      { q: '¿Ya intentó reiniciar el equipo o hacer un forzado de red?', tip: 'El reinicio forza al equipo a registrarse de nuevo. Si ya lo hizo y persiste, es más probable que sea un problema de configuración de red o enrutamiento que requiere N2.' }
+    ],
+    steps: [
+      { paso:1, nivel:'N1', accion:'Validar que el equipo esté en la lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio con ese equipo. Se finaliza llamada.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
+      { paso:3, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 4', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:4, nivel:'N1', accion:'Verificar VoLTE activo.', validacion:'¿VoLTE activo?', si:'Paso 5', no:'Se activa VoLTE y queda con servicio. Se finaliza llamada.', nota:'Evidencia de pantalla.' },
+      { paso:5, nivel:'N1', accion:'Confirmar cobertura ALTÁN o Roaming.', validacion:'¿Tiene cobertura?', si:'Paso 6', no:'Activar Roaming. Se finaliza llamada.', nota:'' },
+      { paso:6, nivel:'N1', accion:'Solicitar reinicio de terminal.', validacion:'¿Continúa sin servicio?', si:'Generar Ticket N2.', no:'Queda con servicio tras reinicio. Se finaliza llamada.', nota:'' },
+      { paso:7, nivel:'N2', accion:'Validar ubicación de la falla.', validacion:'¿Es zona específica?', si:'Ubicación exacta con gnet track.', no:'Validar marcación. Ir a Paso 8.', nota:'' },
+      { paso:8, nivel:'N2', accion:'Validar marcación (quien llama).', validacion:'¿Marcación correcta?', si:'Identificar si falla con un número solo. Ir a Paso 9.', no:'Indicar marcación correcta y cerrar ticket.', nota:'' },
+      { paso:9, nivel:'N2', accion:'Revisar frecuencia de la falla.', validacion:'¿Ocurre con frecuencia?', si:'Reproducir falla marcando de otros números. Si falla desde misma compañía, el problema es del usuario B.', no:'Validar portabilidad. Ir a Paso 10.', nota:'' },
+      { paso:10, nivel:'N2', accion:'Validar si viene de portabilidad.', validacion:'¿Es portado?', si:'Identificar compañía de origen. Escalar a ALTÁN CIC con toda la info.', no:'Revisar Dual SIM y tono de error.', nota:'Se escala a CIC de ALTÁN.' }
+    ],
+    checklist: [
+      'Equipo homologado verificado',
+      'Estatus del servicio activo',
+      'Modo Avión desactivado',
+      'VoLTE activado',
+      'Cobertura / Roaming activo',
+      'Reinicio de terminal realizado',
+      'Verificar si viene de portabilidad',
+      'Confirmar con quien marca al cliente'
+    ],
+    infographics: [
+      { label:'Activar VoLTE', url:'#' },
+      { label:'Mapa de cobertura', url:'#' },
+      { label:'Proceso portabilidad', url:'#' }
+    ]
+  },
+
+  'datos': {
+    label: 'Sin Navegación / Falla de Datos',
+    icon: '🌐',
+    diagQuestions: [
+      { q: '¿Desde cuándo presenta la falla de navegación o datos?', tip: 'Si empezó de repente puede coincidir con un cambio de equipo, actualización de sistema, o configuración tocada accidentalmente. Si lleva días, puede ser cobertura o APN.' },
+      { q: '¿Realizó algún cambio de equipo celular recientemente?', tip: 'Un equipo nuevo frecuentemente tiene el APN sin configurar, lo que impide la navegación aunque tenga señal. Es la causa número uno de fallas de datos en equipos nuevos.' },
+      { q: '¿La falla es todo el tiempo o solo en ciertos horarios del día?', tip: 'Fallas en horario pico (7-9am, 1-3pm, 7-10pm) suelen ser saturación de red. Falla constante apunta a configuración o cobertura baja.' },
+      { q: '¿La falla ocurre en cualquier lugar o solo cuando está en un sitio específico?', tip: 'Si solo falla en casa o la oficina, puede ser señal débil indoor o zona sin cobertura. Si falla en todos lados, el problema es del equipo o la línea.' },
+      { q: '¿El problema es en una sola página o app, o en todas sin excepción?', tip: 'Si falla solo en una app o sitio web, el problema es probablemente de esa plataforma o del caché del equipo, no de la red. Si falla en todo, es un problema de conectividad.' },
+      { q: '¿Le dice "sin conexión a internet" o la página sí carga pero muy lento?', tip: '"Sin conexión" = el equipo no tiene datos activos o no hay APN configurado. "Lento" = hay datos pero la señal es débil, o hay saturación de red, o el plan de datos ya se agotó.' },
+      { q: '¿Está usando datos móviles o está conectado a WiFi en el momento de la falla?', tip: 'Muchos clientes hacen la prueba conectados a WiFi sin notarlo. La prueba de datos móviles debe ser SIEMPRE con WiFi apagado. Confirmar esto antes de avanzar.' },
+      { q: '¿Tiene los datos móviles encendidos en su equipo?', tip: 'Es el error más común: el cliente tiene WiFi y datos apagados al mismo tiempo. Pedir que vaya a Configuración > Red > Datos móviles y confirme que están activos.' },
+      { q: '¿Le aparece el ícono de 4G, LTE o alguna indicación de red de datos en la barra de estado?', tip: 'Si no aparece ningún ícono de datos, el equipo no está registrado en datos aunque tenga señal de voz. Puede ser APN incorrecto o datos no habilitados en la línea.' },
+      { q: '¿Ya intentó apagar y encender los datos móviles o hacer un reinicio del equipo?', tip: 'El reinicio de ciclo de datos forza al equipo a reconectarse a la red de datos. Si ya lo hizo y persiste, es más profundo (APN, configuración de red o falla de plataforma).' },
+      { q: '¿Ha notado que solo le pasa al usar cierta aplicación o al entrar a ciertos sitios web?', tip: 'Si es una sola app, puede ser problema de caché, permisos de la app, o que el servidor de esa app esté caído. No es problema de la red ALTÁN.' },
+      { q: '¿Su plan de datos aún tiene GB disponibles o cree que ya los agotó?', tip: 'Si agotó el paquete de datos, la velocidad cae drásticamente o se bloquea la navegación. Verificar consumo en View 360.' },
+      { q: '¿Tiene configurado correctamente el APN en su equipo?', tip: 'El APN (Access Point Name) es la configuración que le dice al equipo cómo conectarse a internet. Si está mal o en blanco, no habrá datos aunque todo lo demás esté bien.' }
+    ],
+    steps: [
+      { paso:1, nivel:'N1', accion:'Validar que el equipo esté en la lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio con ese equipo. Se finaliza llamada.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
+      { paso:3, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 4', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:4, nivel:'N1', accion:'Validar que el cliente tenga los datos móviles encendidos.', validacion:'¿Datos activos?', si:'Paso 5', no:'Se pide activar datos y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:5, nivel:'N1', accion:'Pedir al cliente validar la configuración del APN (si el equipo lo permite).', validacion:'¿APN correcto?', si:'Paso 6', no:'Se configura APN correctamente y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:6, nivel:'N1', accion:'Confirmar en mapa si el cliente está en cobertura ALTÁN o Roaming.', validacion:'¿En cobertura?', si:'Paso 7', no:'Cliente fuera de cobertura. Activar Roaming. Informar límite de GB en roaming.', nota:'' },
+      { paso:7, nivel:'N1', accion:'Sondear si el problema ocurre con todas las apps o solo una específica.', validacion:'¿Todas las APPs?', si:'Paso 8', no:'El problema solo ocurre en una app. Hacer prueba con otro dispositivo. Si falla también, el problema es la app/página.', nota:'' },
+      { paso:8, nivel:'N1', accion:'Solicitar reinicio de la terminal.', validacion:'¿Navega después de reiniciar?', si:'Queda con navegación. Se finaliza llamada.', no:'Generar Ticket N2.', nota:'' },
+      { paso:9, nivel:'N2', accion:'Replicar pruebas del escenario del usuario.', validacion:'¿Se replica la falla?', si:'Validar si está conectado a WiFi. Confirmar si la prueba fue en red móvil.', no:'Descartar terminal y validar red.', nota:'' },
+      { paso:10, nivel:'N2', accion:'Ubicar si la falla ocurre en un lugar específico.', validacion:'¿Lugar específico?', si:'Instalar gnet track para determinar ubicación. Validar si es indoor o outdoor.', no:'Falla en cualquier lugar. Escalar a ALTÁN CIC.', nota:'' },
+      { paso:11, nivel:'N2', accion:'Validar si cliente tiene Dual SIM.', validacion:'¿Dual SIM?', si:'Verificar que esté usando la SIM correcta para datos.', no:'Escalar a ALTÁN CIC con evidencias.', nota:'' }
+    ],
+    checklist: [
+      'Equipo homologado verificado',
+      'Estatus del servicio activo',
+      'Modo Avión desactivado',
+      'Datos móviles encendidos',
+      'APN configurado correctamente',
+      'Cobertura ALTÁN / Roaming activo',
+      'Tipo de red: 4G habilitado',
+      'Reinicio de terminal realizado',
+      'Prueba en múltiples apps realizada',
+      'No conectado a WiFi durante prueba'
+    ],
+    infographics: [
+      { label:'Configurar APN correctamente', url:'#' },
+      { label:'Activar datos móviles', url:'#' },
+      { label:'Mapa de cobertura', url:'#' },
+      { label:'Activar Roaming', url:'#' }
+    ]
+  },
+
+  'sms-es': {
+    label: 'Sin SMS Entrantes & Salientes',
+    icon: '💬',
+    diagQuestions: [
+      { q: '¿Desde cuándo no puede enviar ni recibir mensajes de texto?', tip: 'Si la falla empezó de repente puede relacionarse con cambio de equipo, portabilidad o configuración tocada. Si lleva tiempo, puede ser un enrutamiento incorrecto de SMS.' },
+      { q: '¿Realizó algún cambio de equipo celular recientemente?', tip: 'Un equipo nuevo puede no tener el número del centro de mensajes SMS configurado, lo que impide tanto enviar como recibir SMS.' },
+      { q: '¿Realizó recientemente algún cambio de número o portabilidad?', tip: 'Las portabilidades pueden dejar problemas de enrutamiento de SMS que afectan tanto los entrantes como los salientes desde/hacia ciertas redes.' },
+      { q: '¿La falla es todo el tiempo o solo en ciertos horarios?', tip: 'Fallas intermitentes pueden indicar saturación del centro de mensajes en la red. Falla constante apunta más a configuración del equipo o del servicio.' },
+      { q: '¿No le sale ningún mensaje de texto o solo falla al enviar a un número corto (A2P)?', tip: 'Los números cortos (4-5 dígitos) para concursos de TV, rifas o servicios automáticos no están soportados en la red. Si el problema es solo con esos, no es una falla del servicio.' },
+      { q: '¿El problema es con todos los contactos o solo con alguno en específico?', tip: 'Si falla con todos, es un problema del servicio de SMS en la línea o el equipo. Si falla solo con uno, puede ser que ese número tenga problemas de recepción en su red.' },
+      { q: '¿Ya intentó enviar antes o es la primera vez que lo intenta?', tip: 'Si nunca antes pudo enviar, puede ser una configuración del equipo. Si antes funcionaba y ahora no, es un cambio reciente lo que lo causó.' },
+      { q: '¿El mensaje que intenta enviar es SMS (texto) o de una aplicación como WhatsApp, Telegram?', tip: 'Los mensajes de apps van por datos (internet), no por SMS. Si la app no manda mensajes, puede ser un problema de datos, no de SMS. Importante diferenciarlo.' },
+      { q: '¿Le aparece algún error al intentar enviar el mensaje (error de envío, sin red, etc.)?', tip: '"Error de envío" = el SMS salió del equipo pero fue rechazado por la red. "Sin red" = el equipo no tiene señal. Cada error orienta hacia una causa diferente.' },
+      { q: '¿El equipo tiene el modo avión activado o algún modo de red restrictivo?', tip: 'Modo avión corta todo: llamadas, datos y SMS. Algunos modos de ahorro de batería también pueden cortar el servicio de SMS en segundo plano.' },
+      { q: '¿Los mensajes que intenta enviar son nacionales (10 dígitos) o internacionales?', tip: 'Los SMS internacionales requieren servicio de roaming de SMS activo. Si el cliente no lo tiene contratado, los SMS internacionales no saldrán ni llegarán.' },
+      { q: '¿El equipo tiene Dual SIM? ¿Desde cuál SIM intenta enviar los mensajes?', tip: 'En Dual SIM, la SIM predeterminada para SMS puede estar configurada en la ranura incorrecta, enviando desde una SIM que no tiene el servicio activo.' }
+    ],
+    steps: [
+      { paso:1, nivel:'N1', accion:'Validar que el equipo esté en lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio. Se finaliza llamada.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de la línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
+      { paso:3, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 4', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:4, nivel:'N1', accion:'Preguntar: ¿El mensaje es a un número celular de 10 dígitos?', validacion:'¿Es a 10 dígitos?', si:'Paso 5', no:'El cliente intenta enviar a numeración corta (P2A). Informar que no se tiene ese servicio. Se finaliza llamada.', nota:'' },
+      { paso:5, nivel:'N1', accion:'Validar si el usuario cuenta solo con servicio nacional.', validacion:'¿Es destino nacional?', si:'Paso 6', no:'Mensaje internacional. Verificar si tiene el servicio internacional activo.', nota:'Depende del cliente si maneja paquetes adicionales.' },
+      { paso:6, nivel:'N1', accion:'Confirmar cobertura ALTÁN o Roaming en mapa.', validacion:'¿Tiene cobertura?', si:'Paso 7', no:'Activar Roaming. Se finaliza llamada.', nota:'' },
+      { paso:7, nivel:'N1', accion:'Solicitar reinicio de terminal.', validacion:'¿Continúa sin servicio?', si:'Generar Ticket N2 y pedir espera de 72 hrs.', no:'Queda con servicio tras reinicio. Se finaliza llamada.', nota:'' },
+      { paso:8, nivel:'N2', accion:'Replicar el escenario para entender si es con un número o compañía específica.', validacion:'¿Se replica?', si:'Si es con un usuario: revisar con compañía del número A. Si es con una compañía: validar portabilidad.', no:'Revisar tipo de mensaje (¿es de app como Telegram/WhatsApp?).', nota:'' }
+    ],
+    checklist: [
+      'Equipo homologado verificado',
+      'Estatus del servicio activo',
+      'Modo Avión desactivado',
+      'SMS a número de 10 dígitos',
+      'No es numeración corta (P2A)',
+      'Destino nacional / servicio internacional activo',
+      'Cobertura / Roaming activo',
+      'Reinicio de terminal realizado',
+      'Validar si el mensaje es de app (A2P)'
+    ],
+    infographics: [
+      { label:'Activar servicio internacional SMS', url:'#' },
+      { label:'Apps A2P soportadas', url:'#' }
+    ]
+  },
+
+  'sms-sal': {
+    label: 'Sin SMS Salientes',
+    icon: '✉️',
+    diagQuestions: [
+      { q: '¿Desde cuándo no puede enviar mensajes de texto?', tip: 'Si fue de repente, puede coincidir con un cambio en el equipo o la línea. Si es gradual, puede ser un problema de señal o de configuración que empeoró.' },
+      { q: '¿Realizó algún cambio de equipo celular recientemente?', tip: 'Los equipos nuevos pueden no tener configurado el número del Centro de Mensajes (SMSC). Sin él, los SMS nunca salen aunque el equipo diga "enviado".' },
+      { q: '¿La falla es todo el tiempo o solo a ciertos horarios o en ciertos lugares?', tip: 'Fallas en horarios específicos pueden ser saturación del SMSC de la red. Si falla solo en un lugar, puede ser señal baja para transmitir el SMS.' },
+      { q: '¿No le sale ningún mensaje de texto o solo falla al enviar a un número corto (concursos, A2P)?', tip: 'Los números cortos (4-5 dígitos) de concursos de TV, servicios automáticos o A2P NO están soportados. Esto no es una falla del servicio: el SMS a número corto simplemente no existe en esta red.' },
+      { q: '¿Ya había enviado mensajes antes desde este equipo o es la primera vez que lo intenta?', tip: 'Si nunca pudo enviar desde este equipo, es casi seguro un problema de configuración del Centro de Mensajes. Si antes funcionaba y ahora no, algo cambió recientemente.' },
+      { q: '¿El mensaje que intenta enviar es solo texto o incluye foto, video o archivo multimedia?', tip: 'Los MMS (mensajes multimedia con fotos, videos, etc.) NO están soportados en la red. Solo los SMS de texto puro están disponibles. Si intenta enviar una imagen por SMS, nunca saldrá.' },
+      { q: '¿El problema es con todos los contactos o solo con uno o varios específicos?', tip: 'Si falla solo con un contacto, puede ser que ese número esté bloqueado, no exista, o su operador rechace SMS de la red ALTÁN. Si falla con todos, es un problema del servicio.' },
+      { q: '¿A cuántos dígitos está marcando el número destino?', tip: 'Todos los números en México deben ser a 10 dígitos. Si el cliente tiene contactos guardados con 7 u 8 dígitos (formato antiguo), el SMS no llegará a ningún lado.' },
+      { q: '¿Le aparece algún error en la app de mensajes del equipo al enviar?', tip: '"Error al enviar" puede significar que el SMS salió pero fue rechazado (posible número inválido o SMSC no configurado). "Sin servicio" puede ser falta de señal en ese momento.' },
+      { q: '¿Tiene el modo avión activado o algún modo de ahorro de batería agresivo?', tip: 'Algunos modos de ahorro de batería bloquean el envío de SMS en segundo plano. El modo avión corta todo servicio de comunicación incluyendo SMS.' },
+      { q: '¿El equipo tiene Dual SIM? ¿Con cuál SIM intenta enviar los mensajes?', tip: 'En equipos Dual SIM, si la SIM predeterminada para mensajes es la incorrecta, los SMS saldrán desde una línea sin servicio o sin saldo.' },
+      { q: '¿Puede recibir mensajes de texto aunque no pueda enviarlos?', tip: 'Si puede recibir pero no enviar, descarta problemas de señal o modo avión. Apunta más a un problema con el Centro de Mensajes (SMSC) o una restricción de salientes en la línea.' }
+    ],
+    steps: [
+      { paso:1, nivel:'N1', accion:'Validar equipo en lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio. Se finaliza llamada.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar.', nota:'' },
+      { paso:3, nivel:'N1', accion:'¿El mensaje es a número celular de 10 dígitos?', validacion:'¿10 dígitos?', si:'Paso 4', no:'Trata de enviar a numeración corta. Informar que no se tiene ese servicio. Se finaliza.', nota:'' },
+      { paso:4, nivel:'N1', accion:'¿Es un mensaje de Texto (SMS) o Multimedia (MMS)?', validacion:'¿Es texto?', si:'Paso 5', no:'Es MMS. Informar que no se cuenta con ese servicio. Se finaliza llamada.', nota:'' },
+      { paso:5, nivel:'N1', accion:'¿El problema es con todos los números o con alguno específico?', validacion:'¿Falla con todos?', si:'Paso 6', no:'Falla con solo un contacto. Generar Ticket N2 y esperar 72 hrs.', nota:'' },
+      { paso:6, nivel:'N1', accion:'Confirmar cobertura ALTÁN o Roaming.', validacion:'¿Tiene cobertura?', si:'Paso 7', no:'Activar Roaming. Se finaliza llamada.', nota:'' },
+      { paso:7, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 8', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:8, nivel:'N1', accion:'Solicitar reinicio de terminal.', validacion:'¿Continúa sin servicio?', si:'Generar Ticket N2 y esperar 72 hrs.', no:'Queda con servicio tras reinicio. Se finaliza llamada.', nota:'' },
+      { paso:9, nivel:'N2', accion:'Replicar el escenario.', validacion:'¿Es con número o compañía específica?', si:'Revisar con compañía del número A. Si viene de portabilidad, escalar a CIC ALTÁN.', no:'Revisar si el mensaje es de una app (Telegram, WhatsApp, etc.).', nota:'' }
+    ],
+    checklist: [
+      'Equipo homologado verificado',
+      'Estatus del servicio activo',
+      'Mensaje a 10 dígitos confirmado',
+      'No es MMS (no soportado)',
+      'No es numeración corta',
+      'Cobertura / Roaming activo',
+      'Modo Avión desactivado',
+      'Reinicio de terminal realizado'
+    ],
+    infographics: [
+      { label:'SMS a 10 dígitos (disposición IFT)', url:'#' }
+    ]
+  },
+
+  'sms-ent': {
+    label: 'Sin SMS Entrantes',
+    icon: '📨',
+    diagQuestions: [
+      { q: '¿Desde cuándo no recibe mensajes de texto?', tip: 'Si empezó de repente puede coincidir con un cambio de equipo, portabilidad reciente o configuración. Si lleva tiempo puede ser un problema de enrutamiento de SMS en la red.' },
+      { q: '¿Realizó algún cambio de número o portabilidad recientemente?', tip: 'Las portabilidades son la causa más común de fallas de SMS entrantes. El SMS puede estar siendo enrutado todavía al número de la red anterior.' },
+      { q: '¿Realizó algún cambio de equipo celular recientemente?', tip: 'Un equipo nuevo puede tener el Centro de Mensajes mal configurado, lo que impide recibir SMS aunque la señal y la línea estén bien.' },
+      { q: '¿La falla es todo el tiempo o solo en ciertos momentos o lugares?', tip: 'Fallas intermitentes pueden ser de cobertura en ese punto. Si falla siempre, es enrutamiento o configuración. Si falla a ciertas horas, puede ser saturación del servidor de SMS.' },
+      { q: '¿El problema es que no llega ningún mensaje de texto, o solo falla el de alguna app (banco, Uber, BBVA, etc.)?', tip: 'Los mensajes de bancos, apps y servicios son A2P y tienen un proceso de habilitación diferente. Si solo falla el del banco o una app, revisar primero la lista de A2P soportadas antes de escalar.' },
+      { q: '¿Ya alguien le intentó enviar un SMS o es la primera vez que alguien lo intenta?', tip: 'Si nadie ha intentado enviarle un SMS de prueba, hacer la prueba en ese momento: pedir a alguien con otra compañía que le mande un mensaje y ver si llega.' },
+      { q: '¿El problema es con todos los que le mandan o solo con alguna persona o compañía específica?', tip: 'Si solo falla desde un número específico, el problema puede ser del remitente. Si solo falla desde cierta compañía, puede ser un problema de interconexión de SMS entre operadores.' },
+      { q: '¿El mensaje que espera recibir viene de un usuario personal o de una aplicación (código OTP, NIP de banco)?', tip: 'Los códigos OTP, NIPs de banco, verificaciones de apps son A2P. Si el banco o la app no está en la lista soportada de A2P, el mensaje no llegará. Revisar lista antes de escalar.' },
+      { q: '¿Los mensajes que no recibe son nacionales o vienen del extranjero?', tip: 'Los SMS internacionales requieren el servicio de roaming de SMS activo. Si el cliente no lo tiene, ningún SMS de otro país llegará.' },
+      { q: '¿El equipo muestra barras de señal o está sin señal cuando espera el mensaje?', tip: 'Sin señal = el SMS no puede entregarse. Los SMS se entregan cuando el equipo recupera señal, pero si la falla es persistente puede que el SMSC no esté guardando el mensaje pendiente.' },
+      { q: '¿Puede enviar mensajes aunque no pueda recibirlos?', tip: 'Si puede enviar pero no recibir, descarta problemas de señal global. Apunta a enrutamiento incorrecto de los SMS hacia esa línea, o a que el número está rechazando entrantes.' },
+      { q: '¿El equipo tiene Dual SIM? ¿Cuál SIM está configurada para recibir mensajes?', tip: 'En Dual SIM, si la SIM predeterminada para mensajes es diferente a la SIM ALTÁN, los SMS llegarán a la SIM equivocada y el cliente no los verá.' }
+    ],
+    steps: [
+      { paso:1, nivel:'N1', accion:'Validar equipo en lista de homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio. Se finaliza llamada.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar estatus de línea en View 360.', validacion:'¿Está activo?', si:'Paso 3', no:'Línea suspendida. Indicar motivo y reactivar.', nota:'' },
+      { paso:3, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 4', no:'Se desactiva modo avión. Se finaliza llamada.', nota:'' },
+      { paso:4, nivel:'N1', accion:'¿El SMS es de un usuario o de una aplicación (A2P)?', validacion:'¿Es de usuario?', si:'Paso 5', no:'Es de aplicación A2P. Validar lista de apps soportadas. Si no está en la lista, escalar a N2.', nota:'A2P: mensajes de suscripción, NIPs, contraseñas de bancos, etc.' },
+      { paso:5, nivel:'N1', accion:'¿Es un mensaje nacional o internacional?', validacion:'¿Es nacional?', si:'Paso 6', no:'Mensaje internacional. Verificar si tiene servicio internacional activo.', nota:'' },
+      { paso:6, nivel:'N1', accion:'Confirmar cobertura ALTÁN o Roaming.', validacion:'¿Tiene cobertura?', si:'Paso 7', no:'Activar Roaming. Se finaliza llamada.', nota:'' },
+      { paso:7, nivel:'N1', accion:'Solicitar reinicio de terminal.', validacion:'¿Continúa sin servicio?', si:'Generar Ticket N2 y esperar 72 hrs.', no:'Queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:8, nivel:'N2', accion:'Replicar el escenario.', validacion:'¿Falla con número específico?', si:'Revisar con compañía del número que envía. Validar portabilidad.', no:'Revisar tipo de mensaje (¿app como Telegram/WhatsApp?). Validar número ingresado.', nota:'' },
+      { paso:9, nivel:'N2', accion:'Validar portabilidad.', validacion:'¿Es portado?', si:'Identificar compañía y escalar a CIC ALTÁN.', no:'Verificar tipo de mensaje y escalar si persiste.', nota:'' }
+    ],
+    checklist: [
+      'Equipo homologado verificado',
+      'Estatus del servicio activo',
+      'Modo Avión desactivado',
+      'Identificar si es SMS de usuario o A2P',
+      'Verificar app A2P en lista soportada',
+      'Destino nacional confirmado',
+      'Cobertura / Roaming activo',
+      'Reinicio de terminal realizado',
+      'Verificar portabilidad'
+    ],
+    infographics: [
+      { label:'Apps A2P soportadas (lista completa)', url:'#' },
+      { label:'Proceso portabilidad', url:'#' }
+    ]
+  },
+
+  'sinservicio': {
+    label: 'Sin Servicio Total',
+    icon: '🚫',
+    diagQuestions: [
+      { q: '¿Desde cuándo no tiene ningún tipo de servicio (llamadas, datos y SMS)?', tip: 'Si fue de repente puede ser una suspensión de línea o SIM extraída/dañada. Si fue gradual, puede ser cobertura que fue empeorando o una actualización del equipo que cambió configuraciones.' },
+      { q: '¿Realizó algún cambio de equipo celular recientemente?', tip: 'El equipo nuevo puede no estar homologado para la red ALTÁN, o la SIM puede no estar bien insertada en la ranura correcta del nuevo dispositivo.' },
+      { q: '¿Realizó algún cambio de número o portabilidad recientemente?', tip: 'Una portabilidad puede tardar hasta 24-72 horas en completarse. Durante ese tiempo el cliente puede quedarse sin servicio total. También puede haber errores si la portabilidad no finalizó bien.' },
+      { q: '¿El equipo le muestra algún mensaje específico? ("SIM no válida", "SIM no detectada", "Sin servicio", "Buscando red", "Solo emergencias")', tip: '"SIM no válida/detectada" = problema físico con la SIM o la ranura. "Sin servicio" = registrado pero sin acceso al servicio. "Buscando red" = no encuentra la red ALTÁN. "Solo emergencias" = detecta red pero sin acceso a servicios.' },
+      { q: '¿Cuántas barras de señal le aparecen en la pantalla del equipo?', tip: 'Sin barras = el equipo no está registrado en ninguna red. Con barras pero sin servicio = está registrado pero hay un problema a nivel de la línea o configuración de servicios.' },
+      { q: '¿La falla es todo el tiempo o intermitente (a veces tiene señal y a veces no)?', tip: 'Si es intermitente, puede ser cobertura baja en esa zona o equipo que pierde y recupera registro. Si es constante, apunta más a SIM, equipo o línea suspendida.' },
+      { q: '¿La falla ocurre en cualquier lugar o solo en un sitio específico?', tip: 'Si solo falla en casa o la oficina, puede ser que esa zona no tiene cobertura ALTÁN suficiente para interior de edificios. Si falla en todos lados, el problema es más serio.' },
+      { q: '¿Ha revisado si la SIM está bien insertada en el equipo?', tip: 'Es uno de los errores más simples pero más frecuentes: la SIM se desacomoda al caer el equipo o al retirarla. También confirmar que está en la ranura 1 si tiene Dual SIM.' },
+      { q: '¿El equipo ha sufrido algún golpe, caída o daño de humedad recientemente?', tip: 'Un golpe puede dañar el lector de SIM internamente, o la humedad puede corroer los contactos. En ese caso el problema es hardware del equipo, no de la red.' },
+      { q: '¿Ha intentado reiniciar el equipo o apagarlo y encenderlo?', tip: 'Un reinicio forza al equipo a buscar y registrarse en la red de nuevo. Si ya lo intentó, pasar al forzado de red. Si no lo ha hecho, este es el primer paso.' },
+      { q: '¿Ha intentado poner la SIM en modo avión y luego quitarlo?', tip: 'El ciclo de modo avión (ON → esperar 10 segundos → OFF) forza al equipo a desregistrarse y volver a buscar la red ALTÁN. Muchas veces resuelve fallas temporales de registro.' },
+      { q: '¿Tiene otro equipo disponible donde pueda probar esa misma SIM?', tip: 'Probar la SIM en otro equipo es la forma más rápida de saber si el problema es de la SIM/línea o del equipo. Si en el otro equipo funciona, el problema es el equipo original.' }
+    ],
+    steps: [
+      { paso:1, nivel:'N1', accion:'Validar equipo en lista de equipos homologados.', validacion:'¿Está en lista?', si:'Paso 2', no:'No puede usar el servicio con ese equipo. Se finaliza llamada.', nota:'' },
+      { paso:2, nivel:'N1', accion:'Validar que la SIM esté insertada correctamente.', validacion:'¿SIM insertada correcta?', si:'Paso 3', no:'Se valida servicio luego de insertar correctamente la SIM. Se finaliza llamada.', nota:'' },
+      { paso:3, nivel:'N1', accion:'Validar estatus de la línea en View 360.', validacion:'¿Está activo?', si:'Paso 4', no:'Línea suspendida. Indicar motivo y reactivar si procede.', nota:'' },
+      { paso:4, nivel:'N1', accion:'Verificar que la línea tenga saldo.', validacion:'¿Tiene saldo?', si:'Paso 5', no:'Informar renovación en siguiente corte. Se finaliza llamada.', nota:'' },
+      { paso:5, nivel:'N1', accion:'Validar que el equipo esté conectado a red ALTÁN (334140).', validacion:'¿Red ALTÁN?', si:'Paso 6', no:'Realizar forzado de red. Se valida servicio y se finaliza llamada.', nota:'' },
+      { paso:6, nivel:'N1', accion:'Validar que NO tenga modo avión activo.', validacion:'¿Modo avión desactivado?', si:'Paso 7', no:'Se desactiva modo avión y queda con servicio. Se finaliza llamada.', nota:'' },
+      { paso:7, nivel:'N1', accion:'Verificar ubicación del usuario en cobertura ALTÁN.', validacion:'¿En cobertura ALTÁN?', si:'Paso 8', no:'Usuario en cobertura Roaming. Activar Roaming y validar servicio.', nota:'' },
+      { paso:8, nivel:'N1', accion:'Confirmar cuántas barras de señal tiene el usuario.', validacion:'¿Buena señal?', si:'Paso 9', no:'Activar Roaming. Validar servicio y finalizar.', nota:'' },
+      { paso:9, nivel:'N1', accion:'Validar que tenga los datos encendidos.', validacion:'¿Datos activos?', si:'Paso 10', no:'Se pide activar datos. Queda con servicio. Se finaliza.', nota:'' },
+      { paso:10, nivel:'N1', accion:'Solicitar reinicio de terminal.', validacion:'¿Continúa sin servicio?', si:'Generar Ticket N2 y pedir espera de 72 hrs.', no:'Queda con servicio tras reinicio. Se finaliza llamada.', nota:'' },
+      { paso:11, nivel:'N2', accion:'Verificar estado de la SIM.', validacion:'¿SIM en buen estado?', si:'Paso 12', no:'Reemplazar SIM. Coordinar con cliente.', nota:'' },
+      { paso:12, nivel:'N2', accion:'Hacer prueba con otra SIM.', validacion:'¿Funciona con otra SIM?', si:'El problema es la SIM original. Reemplazar.', no:'El problema es el equipo. Revisar compatibilidad.', nota:'' }
+    ],
+    checklist: [
+      'Equipo homologado verificado',
+      'SIM insertada correctamente',
+      'Estatus del servicio activo',
+      'Saldo disponible',
+      'Red ALTÁN (334140) forzada',
+      'Modo Avión desactivado',
+      'Cobertura ALTÁN verificada',
+      'Barras de señal suficientes',
+      'Datos encendidos',
+      'Reinicio de terminal realizado',
+      'Prueba con otra SIM realizada'
+    ],
+    infographics: [
+      { label:'Forzado de red ALTÁN', url:'#' },
+      { label:'Insertar SIM correctamente', url:'#' },
+      { label:'Activar Roaming', url:'#' },
+      { label:'Mapa de cobertura', url:'#' }
+    ]
+  }
+};
+
+const a2pData = {
+  bancos: [
+    'BBVA','Banamex','Banorte','Santander','Scotiabank','HSBC','Banco Inbursa',
+    'Mercado Pago','Actinver','PayPal','INFONAVIT','AMEX','Famsa','Bancoppel',
+    'Bajío','SAT','Sabadell','Invex','BANSI','AFIRME','BANJERCITO','CLIP',
+    'Fonacot','Ve por Mas','CIBANCO','MIFEL*','Sr. Pago','Compartamos','Banregio','HeyBanco','Azteca'
+  ],
+  apps: [
+    'WhatsApp','DiDi','Facebook','Amazon','Rappi','Sin Delantal','Snapchat',
+    'AIRBNB','Telegram','Uber','Uber Eats','Chedraui','Cinemex','Club Premier',
+    'TELMEX','Walmart','Google Suite','AFORE','izzi','Liverpool','Microsoft Office',
+    'Mercado Libre','Bitso','Booking','Sears'
+  ],
+  otras: [
+    'CashCash','Actinver','CODI','Afore Coppel','Afore Invercap','Profuturo',
+    'Falabella Soriana','Suburbia','Bradescard','Vepormas','GNP Informa','Seguro AXA',
+    'Toka','Jetty','Prontipagos','DINERCAP','OKredito','Pagaloop','Kueski','PayJoy',
+    'Moneyman','Coinbase','Tala','Vivus','Twitch','Truecaller','Yalla','HouseParty',
+    'Welink','Wechat','Picap','Likee','TikTok','Blablacar','Tinder'
+  ]
+};
+
+// =============================================
+// STATE
+// =============================================
+let currentCategory = null;
+let currentStep = 0;
+let history = [];
+let checkedItems = {};
+
+// =============================================
+// RENDERING
+// =============================================
+
+function selectCategory(cat) {
+  // Update sidebar active
+  document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('btn-' + cat);
+  if (btn) btn.classList.add('active');
+
+  currentCategory = cat;
+  currentStep = 0;
+  history = [];
+  checkedItems = {};
+
+  if (cat === 'welcome') { renderWelcome(); return; }
+  if (cat === 'recargas') { renderRecargas(); return; }
+  if (cat === 'portabilidad') { renderPortabilidad(); return; }
+  if (cat === 'a2p') { renderA2P(); return; }
+
+  const data = categories[cat];
+  if (!data) { renderWelcome(); return; }
+
+  renderDiagnostic(data);
+}
+
+function renderWelcome() {
+  document.getElementById('content').innerHTML = `
+    <div class="welcome">
+      <div class="welcome-icon">🛠️</div>
+      <h2>Simulador de Troubleshooting</h2>
+      <p>Selecciona el tipo de falla del cliente en el menú lateral para iniciar el árbol de decisiones guiado. El simulador te preguntará qué validar en cada paso y te indicará la solución exacta.</p>
+      <div class="quick-grid">
+        <div class="quick-card" onclick="selectCategory('llam-es')">
+          <div class="qi">📵</div>
+          <div class="ql">Sin Llamadas</div>
+          <div class="qd">Ent. & Sal.</div>
+        </div>
+        <div class="quick-card" onclick="selectCategory('datos')">
+          <div class="qi">🌐</div>
+          <div class="ql">Sin Navegación</div>
+          <div class="qd">Falla de Datos</div>
+        </div>
+        <div class="quick-card" onclick="selectCategory('sms-es')">
+          <div class="qi">💬</div>
+          <div class="ql">Sin SMS</div>
+          <div class="qd">Ent. & Sal.</div>
+        </div>
+        <div class="quick-card" onclick="selectCategory('sinservicio')">
+          <div class="qi">🚫</div>
+          <div class="ql">Sin Servicio</div>
+          <div class="qd">Servicio Total</div>
+        </div>
+        <div class="quick-card" onclick="selectCategory('recargas')">
+          <div class="qi">💳</div>
+          <div class="ql">Recargas</div>
+          <div class="qd">Informativo</div>
+        </div>
+        <div class="quick-card" onclick="selectCategory('portabilidad')">
+          <div class="qi">🔄</div>
+          <div class="ql">Portabilidad</div>
+          <div class="qd">Seguimiento</div>
+        </div>
+      </div>
+      <div class="info-card" style="max-width:400px;margin:0 auto;text-align:left;">
+        <strong>💡 Flujo de atención:</strong><br>
+        1. Identificar tipo de falla<br>
+        2. Hacer preguntas de diagnóstico<br>
+        3. Seguir el árbol de decisiones paso a paso<br>
+        4. Revisar checklist al finalizar
+      </div>
+    </div>
+  `;
+}
+
+function renderDiagnostic(data) {
+  const content = document.getElementById('content');
+
+  const questionsHtml = data.diagQuestions.map((item, i) => {
+    const q = typeof item === 'string' ? item : item.q;
+    const tip = typeof item === 'object' ? item.tip : null;
+    return `
+      <div class="diag-question-card" id="dq-${i}">
+        <div class="diag-q-row" onclick="toggleDiagTip(${i})">
+          <div class="diag-q-num">${i+1}</div>
+          <div class="diag-q-text">${q}</div>
+          <div class="diag-q-arrow" id="dq-arrow-${i}">›</div>
+        </div>
+        ${tip ? `<div class="diag-q-tip" id="dq-tip-${i}" style="display:none">💡 ${tip}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  content.innerHTML = `
+    <div class="tree-container">
+      <div class="tree-header">
+        <div class="tree-header-icon">${data.icon}</div>
+        <div>
+          <h2>${data.label}</h2>
+          <p>Troubleshooting Guiado — ALTÁN Movilidad</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-badge">🔎 Paso Previo — Diagnóstico Inicial</div>
+        <div class="step-question">Antes de avanzar, realiza estas preguntas al cliente para identificar el escenario correctamente.</div>
+        <p style="font-size:12px;color:var(--text-muted);margin:8px 0 16px;line-height:1.6;">
+          Toca cada pregunta para ver el <strong style="color:var(--accent)">por qué es importante</strong> preguntarla. Sin este diagnóstico previo, es difícil identificar la causa raíz.
+        </p>
+
+        <div class="diag-prompt">
+          <h4>🎯 Preguntas clave de diagnóstico</h4>
+          ${questionsHtml}
+        </div>
+
+        <div style="margin-top:16px;padding:12px;background:rgba(158,29,35,0.05);border:1px solid rgba(158,29,35,0.2);border-left:3px solid var(--altan-red);border-radius:0 8px 8px 0;font-size:12px;color:var(--altan-red);line-height:1.6;">
+          ⚠️ <strong>Recuerda:</strong> El cliente no siempre sabe cuál es el problema real. Estas preguntas te ayudan a descartar escenarios antes de avanzar al árbol.
+        </div>
+
+        <div class="answer-row" style="margin-top:20px">
+          <button class="btn-yes" onclick="startTree()">
+            ✅ Ya hice el diagnóstico — Continuar
+          </button>
+          <button class="btn-no" onclick="showDiagReminder()">
+            ⏭️ Saltar diagnóstico
+          </button>
+        </div>
+      </div>
+
+      <div id="diag-reminder" style="display:none">
+        <div class="ticket-card">
+          <h3>⚠️ ¿Seguro que quieres saltar?</h3>
+          <p style="font-size:14px;line-height:1.7;color:var(--text);">
+            Sin el diagnóstico previo es más difícil identificar la causa raíz y podrías recorrer pasos innecesarios. Se recomienda siempre realizarlo.
+          </p>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="document.getElementById('diag-reminder').style.display='none'">← Volver</button>
+          <button class="btn-restart" onclick="startTree()">Continuar de todas formas →</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showDiagReminder() {
+  document.getElementById('diag-reminder').style.display = 'block';
+}
+
+function toggleDiagTip(i) {
+  const tip = document.getElementById('dq-tip-' + i);
+  const arrow = document.getElementById('dq-arrow-' + i);
+  const card = document.getElementById('dq-' + i);
+  if (!tip) return;
+  const visible = tip.style.display !== 'none';
+  tip.style.display = visible ? 'none' : 'block';
+  arrow.style.transform = visible ? 'rotate(0deg)' : 'rotate(90deg)';
+  card.style.borderColor = visible ? 'transparent' : 'rgba(158,29,35,0.3)';
+}
+
+
+function startTree() {
+  currentStep = 0;
+  history = [];
+  renderStep();
+}
+
+function renderStep() {
+  const data = categories[currentCategory];
+  if (!data || currentStep >= data.steps.length) return;
+
+  const step = data.steps[currentStep];
+  const total = data.steps.length;
+  const pct = Math.round((currentStep / total) * 100);
+
+  const breadcrumbHtml = history.length > 0
+    ? `<div class="breadcrumb">
+        ${history.map((h,i) => `<span>Paso ${h.paso}</span><span class="sep">›</span>`).join('')}
+        <span>Paso ${step.paso}</span>
+       </div>`
+    : '';
+
+  const levelClass = step.nivel === 'N1' ? 'level-n1' : 'level-n2';
+  const levelLabel = step.nivel === 'N1' ? '📞 Nivel 1 — Front Office' : '🔧 Nivel 2 — Back Office';
+
+  document.getElementById('content').innerHTML = `
+    <div class="tree-container">
+      <div class="tree-header">
+        <div class="tree-header-icon">${data.icon}</div>
+        <div>
+          <h2>${data.label}</h2>
+          <p>Troubleshooting Guiado — ALTÁN Movilidad</p>
+        </div>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <div class="progress-label">
+          <span>Progreso</span>
+          <span>Paso ${step.paso} de ${total}</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+
+      ${breadcrumbHtml}
+
+      <div class="level-badge ${levelClass}">${levelLabel}</div>
+
+      <div class="step-card">
+        <div class="step-badge">✦ Paso ${step.paso}</div>
+        <div class="step-question">${step.accion}</div>
+        ${step.nota ? `<div class="step-note">📌 ${step.nota}</div>` : ''}
+
+        <div style="margin-top:16px;margin-bottom:8px;font-size:13px;font-weight:600;color:var(--text-muted);">${step.validacion}</div>
+
+        <div class="answer-row">
+          <button class="btn-yes" onclick="answerStep(true)">
+            ✅ SÍ
+          </button>
+          <button class="btn-no" onclick="answerStep(false)">
+            ❌ NO
+          </button>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn-back" onclick="goBack()">← Atrás</button>
+        <button class="btn-back" onclick="selectCategory('${currentCategory}')">🔄 Reiniciar</button>
+      </div>
+    </div>
+  `;
+}
+
+function answerStep(yes) {
+  const data = categories[currentCategory];
+  const step = data.steps[currentStep];
+  const answer = yes ? step.si : step.no;
+
+  history.push({ paso: step.paso, answer: yes });
+
+  // Check if answer is a "Paso N" reference or a solution
+  const nextStepMatch = answer.match(/^Paso (\d+)/);
+  if (nextStepMatch) {
+    const nextPasoNum = parseInt(nextStepMatch[1]);
+    const nextIdx = data.steps.findIndex(s => s.paso === nextPasoNum);
+    if (nextIdx !== -1) {
+      currentStep = nextIdx;
+      renderStep();
+      return;
+    }
+  }
+
+  // Check if it contains "Generar Ticket"
+  const isTicket = answer.toLowerCase().includes('generar ticket') || answer.toLowerCase().includes('escalar');
+
+  // It's a solution - render it
+  renderSolution(step, answer, isTicket, yes);
+}
+
+function renderSolution(step, solution, isTicket, isYes) {
+  const data = categories[currentCategory];
+
+  // Build checklist
+  const checklistHtml = data.checklist ? `
+    <div class="checklist-card">
+      <h3>☑️ Checklist de Revisión</h3>
+      ${data.checklist.map((item, i) => `
+        <div class="check-item ${checkedItems[i] ? 'checked' : ''}" onclick="toggleCheck(${i}, this)">
+          <div class="check-box">${checkedItems[i] ? '✓' : ''}</div>
+          <div class="check-label">${item}</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
+
+  // Build infographics
+  const infographicsHtml = data.infographics && data.infographics.length > 0 ? `
+    <div class="infographic-section">
+      <h4>📸 Infografías y Configuraciones</h4>
+      ${data.infographics.map(link => `
+        <a href="${link.url}" class="infographic-link" target="_blank">
+          <span class="link-icon">🔗</span>
+          <span>${link.label}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text-muted)">Ver →</span>
+        </a>
+      `).join('')}
+    </div>
+  ` : '';
+
+  const cardClass = isTicket ? 'ticket-card' : 'solution-card';
+  const cardTitle = isTicket ? '🎫 Generar Ticket / Escalar' : '✅ Solución Encontrada';
+
+  document.getElementById('content').innerHTML = `
+    <div class="tree-container">
+      <div class="tree-header">
+        <div class="tree-header-icon">${data.icon}</div>
+        <div>
+          <h2>${data.label}</h2>
+          <p>Resultado del diagnóstico — Paso ${step.paso}</p>
+        </div>
+      </div>
+
+      <div class="${cardClass}">
+        <h3>${cardTitle}</h3>
+        <p>${solution.replace(/\n/g, '<br>')}</p>
+        ${isTicket ? '<div class="note-tag">⏰ Pedir espera de 72 horas al cliente</div>' : ''}
+      </div>
+
+      ${checklistHtml}
+      ${infographicsHtml}
+
+      <div class="nav-row">
+        <button class="btn-back" onclick="goBack()">← Atrás</button>
+        <button class="btn-restart" onclick="selectCategory('${currentCategory}')">🔄 Nueva consulta</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleCheck(idx, el) {
+  checkedItems[idx] = !checkedItems[idx];
+  el.classList.toggle('checked', checkedItems[idx]);
+  el.querySelector('.check-box').textContent = checkedItems[idx] ? '✓' : '';
+}
+
+function goBack() {
+  if (history.length === 0) {
+    selectCategory(currentCategory);
+    return;
+  }
+  history.pop();
+  if (history.length === 0) {
+    startTree();
+    return;
+  }
+  const lastPaso = history[history.length - 1].paso;
+  const data = categories[currentCategory];
+  const idx = data.steps.findIndex(s => s.paso === lastPaso);
+  currentStep = idx !== -1 ? idx : 0;
+  renderStep();
+}
+
+// =============================================
+// INFORMATIVE SCREENS
+// =============================================
+
+function renderRecargas() {
+  document.getElementById('content').innerHTML = `
+    <div class="tree-container">
+      <div class="tree-header">
+        <div class="tree-header-icon">💳</div>
+        <div><h2>Recargas</h2><p>Informativo — Consultas frecuentes</p></div>
+      </div>
+      <div class="info-section">
+        <div class="step-badge">📋 Preguntas frecuentes sobre Recargas</div>
+        <br>
+
+        <button class="info-topic-btn" onclick="toggleInfo('r1', this)">
+          💰 ¿Cómo puedo hacer una recarga?
+        </button>
+        <div id="r1" class="info-answer" style="display:none">
+          El cliente puede recargar su línea a través de los canales habilitados por su operador: sitio web, app móvil, tiendas físicas autorizadas, o puntos de recarga conveniencia (OXXO, farmacias, etc.). Consultar con el MVNO los canales disponibles.
+        </div>
+
+        <button class="info-topic-btn" onclick="toggleInfo('r2', this)">
+          🔄 ¿Cuándo se renueva el paquete?
+        </button>
+        <div id="r2" class="info-answer" style="display:none">
+          El paquete se renueva en la fecha de corte del cliente. Si el cliente no tiene saldo al momento del corte, se suspende el servicio hasta que realice una recarga.
+        </div>
+
+        <button class="info-topic-btn" onclick="toggleInfo('r3', this)">
+          ⏰ ¿Qué pasa si no recarga a tiempo?
+        </button>
+        <div id="r3" class="info-answer" style="display:none">
+          Si el cliente no recarga antes del corte, la línea puede pasar a estado suspendido por morosidad. Se debe solicitar el pago y reactivar la línea una vez cubierto el adeudo.
+        </div>
+
+        <button class="info-topic-btn" onclick="toggleInfo('r4', this)">
+          ❓ ¿Cómo verificar saldo disponible?
+        </button>
+        <div id="r4" class="info-answer" style="display:none">
+          El agente puede verificar el saldo del cliente directamente en el sistema View 360 o equivalente. El cliente puede consultarlo desde su app o mediante USSD si el operador lo tiene habilitado.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPortabilidad() {
+  document.getElementById('content').innerHTML = `
+    <div class="tree-container">
+      <div class="tree-header">
+        <div class="tree-header-icon">🔄</div>
+        <div><h2>Seguimiento de Portabilidad</h2><p>Informativo — Proceso de portación</p></div>
+      </div>
+      <div class="info-section">
+        <div class="step-badge">📋 Información sobre Portabilidad</div>
+        <br>
+
+        <button class="info-topic-btn" onclick="toggleInfo('p1', this)">
+          📋 ¿Cómo iniciar una portabilidad?
+        </button>
+        <div id="p1" class="info-answer" style="display:none">
+          El cliente debe solicitar el NIP de portabilidad a su operador actual (NIP válido por 24 horas), luego acudir con el operador receptor para iniciar el proceso. El proceso puede tardar de 24 a 72 horas hábiles.
+        </div>
+
+        <button class="info-topic-btn" onclick="toggleInfo('p2', this)">
+          🔍 ¿Cómo dar seguimiento a una portación?
+        </button>
+        <div id="p2" class="info-answer" style="display:none">
+          El ejecutivo puede verificar el estatus de la portación en el sistema interno. Si la portación fue exitosa pero persisten problemas de servicio, escalar a CIC ALTÁN con el número portado, compañía de origen y descripción del problema.
+        </div>
+
+        <button class="info-topic-btn" onclick="toggleInfo('p3', this)">
+          ⚠️ ¿Qué hacer si el cliente portado tiene problemas?
+        </button>
+        <div id="p3" class="info-answer" style="display:none">
+          Si el cliente portado tiene problemas de servicio (llamadas, SMS, datos), se debe identificar el tipo de falla y la compañía de origen, luego escalar el caso al CIC de ALTÁN con toda la información recopilada: IMSI, número telefónico, compañía de origen, tipo de falla y fecha de portación.
+        </div>
+
+        <button class="info-topic-btn" onclick="toggleInfo('p4', this)">
+          📞 ¿Cuándo escalar al CIC ALTÁN?
+        </button>
+        <div id="p4" class="info-answer" style="display:none">
+          Escalar al CIC de ALTÁN cuando: el cliente portado tiene fallas persistentes con una compañía específica, no se puede reproducir la falla desde el N2, o la falla es sistemática entre operadores. Datos requeridos para escalar: IMSI, número telefónico, descripción del problema, fecha y hora de la falla, compañía de origen.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderA2P() {
+  const bancosHtml = a2pData.bancos.map(b => {
+    const isPending = b.includes('*');
+    const name = b.replace('*', '');
+    return `<div class="a2p-item"><strong>${name}</strong><span class="${isPending ? 'pending-dot' : 'ok-dot'}">${isPending ? '⏳ En curso' : '✓ OK'}</span></div>`;
+  }).join('');
+
+  const appsHtml = a2pData.apps.map(a => `<div class="a2p-item"><strong>${a}</strong><span class="ok-dot">✓ OK</span></div>`).join('');
+  const otrasHtml = a2pData.otras.map(a => `<div class="a2p-item"><strong>${a}</strong><span class="ok-dot">✓ OK</span></div>`).join('');
+
+  document.getElementById('content').innerHTML = `
+    <div class="tree-container" style="max-width:800px">
+      <div class="tree-header">
+        <div class="tree-header-icon">📋</div>
+        <div><h2>Listado de Apps A2P Soportadas</h2><p>Mensajes automáticos — Bancos, Apps y Servicios</p></div>
+      </div>
+
+      <div class="info-card" style="margin-bottom:16px">
+        <strong>¿Qué es A2P?</strong> Son mensajes automáticos que envían aplicaciones al usuario: NIPs de bancos, códigos de verificación, notificaciones de Uber, etc. Si el SMS es de una app, verificar primero si está en esta lista antes de escalar.
+      </div>
+
+      <div class="checklist-card">
+        <h3>🏦 Bancos</h3>
+        <div class="a2p-grid">${bancosHtml}</div>
+      </div>
+
+      <div class="checklist-card">
+        <h3>📱 Apps Principales</h3>
+        <div class="a2p-grid">${appsHtml}</div>
+      </div>
+
+      <div class="checklist-card">
+        <h3>🔧 Otras Apps</h3>
+        <div class="a2p-grid">${otrasHtml}</div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleInfo(id, btn) {
+  const el = document.getElementById(id);
+  const visible = el.style.display !== 'none';
+  el.style.display = visible ? 'none' : 'block';
+}
+
+// =============================================
+// INIT
+// =============================================
+renderWelcome();
+</script>
+</body>
+</html>
